@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+
+  <meta
+    name="description"
+    content="Вне кадра — энциклопедия и генератор идей для мобильной фотографии."
+  />
+
+  <meta name="theme-color" content="#11100f" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <title>Вне кадра</title>
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">МОБИЛЬНАЯ ФОТОГРАФИЯ</p>
+        <h1 class="brand">Вне кадра</h1>
+      </div>
+
+      <button
+        class="icon-button"
+        id="themeToggle"
+        aria-label="Переключить тему"
+        title="Переключить тему"
+      >
+        ◐
+      </button>
+    </header>
+
+    <main id="app" class="main-content"></main>
+
+    <nav class="bottom-nav" aria-label="Основная навигация">
+      <button class="nav-item active" data-screen="today">
+        <span class="nav-icon">◉</span>
+        <span>Сегодня</span>
+      </button>
+
+      <button class="nav-item" data-screen="learn">
+        <span class="nav-icon">▤</span>
+        <span>Изучать</span>
+      </button>
+
+      <button class="nav-item nav-item-main" data-screen="shoot">
+        <span class="shoot-icon">＋</span>
+        <span>Снять</span>
+      </button>
+
+      <button class="nav-item" data-screen="collection">
+        <span class="nav-icon">♡</span>
+        <span>Коллекция</span>
+      </button>
+
+      <button class="nav-item" data-screen="profile">
+        <span class="nav-icon">○</span>
+        <span>Профиль</span>
+      </button>
+    </nav>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

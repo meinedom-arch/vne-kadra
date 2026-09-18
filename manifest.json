@@ -1,0 +1,13 @@
+{
+  "name": "Вне кадра — мобильная фотография",
+  "short_name": "Вне кадра",
+  "description": "Энциклопедия, задания и идеи для мобильного фотографа.",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#11100f",
+  "theme_color": "#11100f",
+  "icons": []
+}
