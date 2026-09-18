@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover"
@@ -28,14 +29,24 @@
         <h1 class="brand">Вне кадра</h1>
       </div>
 
-      <button
-        class="icon-button"
-        id="themeToggle"
-        aria-label="Переключить тему"
-        title="Переключить тему"
-      >
-        ◐
-      </button>
+      <div class="topbar-actions">
+        <button
+          class="install-button hidden"
+          id="installButton"
+          type="button"
+        >
+          Установить
+        </button>
+
+        <button
+          class="icon-button"
+          id="themeToggle"
+          type="button"
+          aria-label="Переключить тему"
+        >
+          ◐
+        </button>
+      </div>
     </header>
 
     <main id="app" class="main-content"></main>

@@ -1,16 +1,26 @@
-const CACHE_NAME = "vne-kadra-v1";
+const CACHE_NAME = "vne-kadra-v3";
 
 const APP_FILES = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
-  "./manifest.json"
+  "./manifest.json",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_FILES))
+    caches.open(CACHE_NAME).then(async (cache) => {
+      for (const file of APP_FILES) {
+        try {
+          await cache.add(file);
+        } catch {
+          // Если иконок пока нет, остальные файлы всё равно кэшируются.
+        }
+      }
+    })
   );
 
   self.skipWaiting();
