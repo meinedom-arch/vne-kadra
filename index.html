@@ -15,12 +15,23 @@
 
   <meta name="theme-color" content="#11100f" />
   <meta name="color-scheme" content="dark light" />
+
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="Вне кадра" />
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
+  />
+  <meta
+    name="apple-mobile-web-app-title"
+    content="Вне кадра"
+  />
 
   <link rel="manifest" href="./manifest.json" />
-  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <link
+    rel="apple-touch-icon"
+    href="./icon-192.png"
+  />
   <link rel="stylesheet" href="./styles.css" />
 
   <title>Вне кадра</title>
@@ -35,8 +46,13 @@
         data-screen="today"
         aria-label="Перейти на главную"
       >
-        <span class="eyebrow">МОБИЛЬНАЯ ФОТОГРАФИЯ</span>
-        <span class="brand">Вне кадра</span>
+        <span class="eyebrow">
+          МОБИЛЬНАЯ ФОТОГРАФИЯ
+        </span>
+
+        <span class="brand">
+          Вне кадра
+        </span>
       </button>
 
       <div class="topbar-actions">
@@ -53,46 +69,83 @@
           id="themeToggle"
           type="button"
           aria-label="Переключить тему"
+          title="Переключить тему"
         >
           ◐
         </button>
       </div>
     </header>
 
-    <main id="app" class="main-content"></main>
+    <main
+      id="app"
+      class="main-content"
+    ></main>
 
-    <nav class="bottom-nav" aria-label="Основная навигация">
-      <button class="nav-item active" type="button" data-screen="today">
+    <nav
+      class="bottom-nav"
+      aria-label="Основная навигация"
+    >
+      <button
+        class="nav-item active"
+        type="button"
+        data-screen="today"
+      >
         <span class="nav-icon">◉</span>
         <span>Сегодня</span>
       </button>
 
-      <button class="nav-item" type="button" data-screen="learn">
+      <button
+        class="nav-item"
+        type="button"
+        data-screen="learn"
+      >
         <span class="nav-icon">▤</span>
         <span>Изучать</span>
       </button>
 
-      <button class="nav-item nav-item-main" type="button" data-screen="shoot">
+      <button
+        class="nav-item nav-item-main"
+        type="button"
+        data-screen="shoot"
+      >
         <span class="shoot-icon">＋</span>
         <span>Снять</span>
       </button>
 
-      <button class="nav-item" type="button" data-screen="collection">
+      <button
+        class="nav-item"
+        type="button"
+        data-screen="collection"
+      >
         <span class="nav-icon">♡</span>
         <span>Коллекция</span>
       </button>
 
-      <button class="nav-item" type="button" data-screen="profile">
+      <button
+        class="nav-item"
+        type="button"
+        data-screen="profile"
+      >
         <span class="nav-icon">○</span>
         <span>Профиль</span>
       </button>
     </nav>
   </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div
+    id="toast"
+    class="toast"
+    role="status"
+    aria-live="polite"
+  ></div>
 
-  <div id="sheetBackdrop" class="sheet-backdrop hidden" aria-hidden="true">
+  <div
+    id="sheetBackdrop"
+    class="sheet-backdrop hidden"
+    aria-hidden="true"
+  >
     <section
+      id="bottomSheet"
       class="bottom-sheet"
       role="dialog"
       aria-modal="true"
@@ -102,8 +155,13 @@
 
       <div class="sheet-header">
         <div>
-          <p class="sheet-eyebrow">НАСТРОЙКА</p>
-          <h2 id="sheetTitle">Выбор</h2>
+          <p class="sheet-eyebrow">
+            НАСТРОЙКА
+          </p>
+
+          <h2 id="sheetTitle">
+            Выбор
+          </h2>
         </div>
 
         <button
@@ -116,10 +174,17 @@
         </button>
       </div>
 
-      <div id="sheetContent"></div>
+      <div
+        id="sheetContent"
+        class="sheet-content"
+      ></div>
     </section>
   </div>
 
+  <!--
+    Сначала загружается база материалов,
+    затем логика приложения.
+  -->
   <script src="./data.js"></script>
   <script src="./app.js"></script>
 </body>

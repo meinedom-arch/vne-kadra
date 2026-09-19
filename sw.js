@@ -1,4 +1,4 @@
-const CACHE_NAME = "vne-kadra-v6";
+const CACHE_NAME = "vne-kadra-v7";
 
 const CORE_FILES = [
   "./",
@@ -14,6 +14,12 @@ const OPTIONAL_FILES = [
   "./icon-512.png"
 ];
 
+/*
+ * Установка:
+ * основные файлы обязательны;
+ * отсутствие необязательной иконки
+ * не должно ломать установку Service Worker.
+ */
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
@@ -28,20 +34,31 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
+/*
+ * Активация:
+ * удаляем кэши предыдущих версий.
+ */
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((names) =>
-      Promise.all(
-        names
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
-      )
-    )
+    caches.keys().then((cacheNames) => {
+      const oldCaches = cacheNames
+        .filter((name) => name !== CACHE_NAME)
+        .map((name) => caches.delete(name));
+
+      return Promise.all(oldCaches);
+    })
   );
 
   self.clients.claim();
 });
 
+/*
+ * Запросы навигации:
+ * сначала проверяем сеть, чтобы пользователь быстрее
+ * получал новую версию index.html.
+ *
+ * При отсутствии сети открываем закэшированную версию.
+ */
 self.addEventListener("fetch", (event) => {
   const request = event.request;
 
@@ -49,22 +66,54 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  const requestUrl = new URL(request.url);
+
+  /*
+   * Не перехватываем запросы к чужим доменам.
+   */
+  if (requestUrl.origin !== self.location.origin) {
+    return;
+  }
+
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
-        .then((response) => {
-          const copy = response.clone();
+        .then(async (response) => {
+          if (response && response.ok) {
+            const cache = await caches.open(CACHE_NAME);
 
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put("./index.html", copy);
-          });
+            await cache.put(
+              "./index.html",
+              response.clone()
+            );
+          }
 
           return response;
         })
         .catch(async () => {
-          return (
-            (await caches.match(request)) ||
-            (await caches.match("./index.html"))
+          const exactMatch = await caches.match(request);
+
+          if (exactMatch) {
+            return exactMatch;
+          }
+
+          const indexMatch = await caches.match(
+            "./index.html"
+          );
+
+          if (indexMatch) {
+            return indexMatch;
+          }
+
+          return new Response(
+            "Приложение временно недоступно без подключения к интернету.",
+            {
+              status: 503,
+              headers: {
+                "Content-Type":
+                  "text/plain; charset=utf-8"
+              }
+            }
           );
         })
     );
@@ -72,27 +121,42 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  /*
+   * Для файлов приложения используем стратегию
+   * «сначала сеть, затем кэш».
+   *
+   * Во время разработки это помогает быстрее получать
+   * обновлённые app.js, data.js и styles.css.
+   */
   event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request)
-        .then((response) => {
-          if (
-            response &&
-            response.status === 200 &&
-            response.type !== "opaque"
-          ) {
-            const copy = response.clone();
+    fetch(request)
+      .then(async (response) => {
+        if (
+          response &&
+          response.ok &&
+          response.type !== "opaque"
+        ) {
+          const cache = await caches.open(CACHE_NAME);
 
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, copy);
-            });
-          }
+          await cache.put(
+            request,
+            response.clone()
+          );
+        }
 
-          return response;
-        })
-        .catch(() => cached);
+        return response;
+      })
+      .catch(async () => {
+        const cached = await caches.match(request);
 
-      return cached || network;
-    })
+        if (cached) {
+          return cached;
+        }
+
+        return new Response("", {
+          status: 504,
+          statusText: "Offline"
+        });
+      })
   );
 });
