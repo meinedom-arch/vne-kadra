@@ -7,11 +7,6 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": [
-    "window-controls-overlay",
-    "standalone",
-    "minimal-ui"
-  ],
   "orientation": "portrait",
   "background_color": "#11100f",
   "theme_color": "#11100f",

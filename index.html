@@ -17,7 +17,6 @@
   <meta name="color-scheme" content="dark light" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Вне кадра" />
 
   <link rel="manifest" href="./manifest.json" />
@@ -54,7 +53,6 @@
           id="themeToggle"
           type="button"
           aria-label="Переключить тему"
-          title="Переключить тему"
         >
           ◐
         </button>
@@ -74,11 +72,7 @@
         <span>Изучать</span>
       </button>
 
-      <button
-        class="nav-item nav-item-main"
-        type="button"
-        data-screen="shoot"
-      >
+      <button class="nav-item nav-item-main" type="button" data-screen="shoot">
         <span class="shoot-icon">＋</span>
         <span>Снять</span>
       </button>
@@ -95,20 +89,10 @@
     </nav>
   </div>
 
-  <div
-    id="toast"
-    class="toast"
-    role="status"
-    aria-live="polite"
-  ></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <div
-    id="sheetBackdrop"
-    class="sheet-backdrop hidden"
-    aria-hidden="true"
-  >
+  <div id="sheetBackdrop" class="sheet-backdrop hidden" aria-hidden="true">
     <section
-      id="bottomSheet"
       class="bottom-sheet"
       role="dialog"
       aria-modal="true"
@@ -132,10 +116,11 @@
         </button>
       </div>
 
-      <div id="sheetContent" class="sheet-content"></div>
+      <div id="sheetContent"></div>
     </section>
   </div>
 
+  <script src="./data.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>

@@ -8,748 +8,96 @@ const sheetTitle = document.querySelector("#sheetTitle");
 const sheetContent = document.querySelector("#sheetContent");
 const sheetClose = document.querySelector("#sheetClose");
 
-const STORAGE_KEY = "vne-kadra-state-v5";
+const { articles, tasks, crisisRoutes, categories } = VK_DATA;
 
-let deferredInstallPrompt = null;
-
-/* -------------------------------------------------------------------------- */
-/* Материалы энциклопедии                                                     */
-/* -------------------------------------------------------------------------- */
-
-const articles = [
-  {
-    id: "camera-controls",
-    title: "Фокус и экспозиция на смартфоне",
-    category: "Основы",
-    description:
-      "Как выбрать точку фокусировки и управлять яркостью до нажатия на кнопку.",
-    tags: ["основы", "камера", "новичкам"],
-    audiences: ["Начинаю", "Снимаю уверенно"],
-    full: {
-      intro:
-        "Большинство упражнений требуют двух действий: выбрать главный объект касанием и изменить яркость кадра.",
-      sections: [
-        {
-          title: "Как сфокусироваться",
-          text:
-            "Наведите камеру на главный объект и коснитесь его на экране. Смартфон попробует навести резкость именно в выбранной области."
-        },
-        {
-          title: "Как изменить яркость",
-          text:
-            "После касания обычно появляется значок солнца или ползунок. Проведите вниз, чтобы сделать кадр темнее, и вверх, чтобы сделать его светлее."
-        },
-        {
-          title: "Как зафиксировать настройки",
-          text:
-            "На многих смартфонах нужно удерживать палец на объекте. Может появиться надпись AE/AF Lock. Название зависит от модели телефона."
-        }
-      ],
-      steps: [
-        "Поставьте предмет возле окна.",
-        "Коснитесь предмета на экране.",
-        "Сделайте один кадр с автоматической яркостью.",
-        "Потяните регулятор яркости вниз и сделайте второй кадр.",
-        "Потяните его вверх и сделайте третий кадр."
-      ],
-      mistakes: [
-        "Фокусироваться на фоне вместо главного объекта.",
-        "Делать светлые участки полностью белыми.",
-        "Забывать протирать объектив перед съёмкой."
-      ],
-      exercise:
-        "Сравните три версии. Выберите не самую яркую, а ту, где лучше сохраняются форма, фактура и настроение."
-    }
-  },
-  {
-    id: "ground-angle",
-    title: "Съёмка от самой земли",
-    category: "Ракурсы",
-    description:
-      "Низкая точка съёмки превращает обычный объект в масштабную сцену.",
-    tags: ["улица", "архитектура", "любой сезон"],
-    audiences: ["Начинаю", "Ищу новые идеи"],
-    full: {
-      intro:
-        "Попробуйте опустить камеру значительно ниже уровня глаз. Даже знакомое место после этого выглядит иначе.",
-      sections: [
-        {
-          title: "Когда это работает",
-          text:
-            "Приём подходит для дорог, травы, луж, лестниц, зданий и людей в движении."
-        },
-        {
-          title: "Что искать",
-          text:
-            "Найдите выразительный передний план: травинку, край лужи, камень, плитку или линию дороги."
-        }
-      ],
-      steps: [
-        "Сделайте обычный кадр с высоты глаз.",
-        "Присядьте и повторите фотографию.",
-        "Опустите смартфон почти к земле.",
-        "Если объектив расположен сверху, переверните телефон камерой вниз.",
-        "Сравните, как изменилась глубина пространства."
-      ],
-      mistakes: [
-        "Слишком много пустого неба.",
-        "Передний план не связан с сюжетом.",
-        "Случайно заваленный горизонт.",
-        "Попытка ограничиться одним кадром."
-      ],
-      exercise:
-        "Снимите одно место с трёх высот. Сравните не качество, а ощущение масштаба."
-    }
-  },
-  {
-    id: "window-light",
-    title: "Свет из окна: три варианта",
-    category: "Свет",
-    description:
-      "Снимите один предмет мягким, контрастным и силуэтным способом.",
-    tags: ["дом", "свет", "новичкам"],
-    audiences: ["Начинаю", "Снимаю уверенно"],
-    full: {
-      intro:
-        "Одно окно может дать три совершенно разные фотографии. Положение предмета и плотность света меняют объём и настроение.",
-      sections: [
-        {
-          title: "Мягкий свет",
-          text:
-            "Закройте окно тонкой занавеской или отодвиньте предмет дальше. Границы теней станут плавными."
-        },
-        {
-          title: "Контрастный свет",
-          text:
-            "Уберите занавеску и поставьте предмет боком к окну. Одна сторона станет яркой, другая уйдёт в тень."
-        },
-        {
-          title: "Силуэт",
-          text:
-            "Поставьте предмет между смартфоном и окном. Коснитесь светлого окна и уменьшите экспозицию."
-        }
-      ],
-      steps: [
-        "Отключите верхний свет и вспышку.",
-        "Поставьте предмет возле окна.",
-        "Коснитесь предмета для фокусировки.",
-        "Сделайте мягкую версию через занавеску.",
-        "Уберите занавеску и сделайте контрастную версию.",
-        "Поставьте предмет перед окном и снимите силуэт."
-      ],
-      mistakes: [
-        "Использовать вспышку.",
-        "Не менять положение предмета.",
-        "Оценивать результат только по общей яркости."
-      ],
-      exercise:
-        "Повторите три варианта с растением, человеком или прозрачной бутылкой."
-    }
-  },
-  {
-    id: "black-white",
-    title: "Чёрно-белое мышление",
-    category: "Цвет",
-    description:
-      "Используйте монохром как способ увидеть свет, форму, ритм и контраст.",
-    tags: ["монохром", "улица", "форма"],
-    audiences: ["Снимаю уверенно", "Ищу новые идеи"],
-    full: {
-      intro:
-        "Чёрно-белый кадр убирает цветовую информацию и оставляет отношения между светом, тенью, фактурой и формой.",
-      sections: [
-        {
-          title: "Что искать",
-          text:
-            "Ищите разницу между светлым и тёмным, повторяющиеся формы, силуэты, фактуры и выразительные тени."
-        },
-        {
-          title: "Как использовать фильтр",
-          text:
-            "Если смартфон позволяет, включите монохромный предпросмотр. Желательно сохранить и цветной оригинал для последующего сравнения."
-        }
-      ],
-      steps: [
-        "Выберите сцену с заметной разницей света и тени.",
-        "Мысленно уберите цвет.",
-        "Проверьте, остаётся ли понятным главный объект.",
-        "Сделайте обычный и немного затемнённый варианты.",
-        "Сравните форму, а не эффектность фильтра."
-      ],
-      mistakes: [
-        "Переводить в монохром любой неудачный цветной кадр.",
-        "Полностью терять детали в тенях.",
-        "Добавлять чрезмерный контраст."
-      ],
-      exercise:
-        "Снимите пять сюжетов, в которых цвет не нужен для понимания фотографии."
-    }
-  },
-  {
-    id: "reflection",
-    title: "Отражение, которого не ждали",
-    category: "Необычные приёмы",
-    description:
-      "Ищите отражения не только в воде: используйте стекло, металл и экраны.",
-    tags: ["отражения", "город", "эксперимент"],
-    audiences: ["Снимаю уверенно", "Ищу новые идеи"],
-    full: {
-      intro:
-        "Отражение может стать вторым пространством в кадре. Оно добавляет слои и визуальную неоднозначность.",
-      sections: [
-        {
-          title: "Где искать",
-          text:
-            "Подойдут лужи, витрины, окна транспорта, полированный металл, зеркала и выключенный экран другого смартфона."
-        },
-        {
-          title: "Как снимать",
-          text:
-            "Подойдите к поверхности под разными углами. Совместите отражение с реальным объектом, а затем снимите только отражение."
-        }
-      ],
-      steps: [
-        "Найдите отражающую поверхность.",
-        "Посмотрите на неё сверху, сбоку и почти на одном уровне.",
-        "Найдите один главный объект в отражении.",
-        "Уберите из кадра лишние яркие детали.",
-        "Сделайте симметричный и намеренно несимметричный варианты."
-      ],
-      mistakes: [
-        "Всегда снимать строго перпендикулярно поверхности.",
-        "Оставлять слишком много деталей.",
-        "Случайно отражать самого фотографа.",
-        "Не иметь главной точки внимания."
-      ],
-      exercise:
-        "Создайте три кадра, в которых не сразу понятно, где заканчивается реальность."
-    }
-  },
-  {
-    id: "motion-blur",
-    title: "Контролируемый смаз",
-    category: "Движение",
-    description:
-      "Сделайте размытие способом показать направление, энергию или скорость.",
-    tags: ["движение", "ночь", "эксперимент"],
-    audiences: ["Снимаю уверенно", "Ищу новые идеи"],
-    full: {
-      intro:
-        "Размытие может передавать движение лучше идеальной резкости. Главное — контролировать его направление.",
-      sections: [
-        {
-          title: "Без ручного режима",
-          text:
-            "Попробуйте ночной режим, съёмку в помещении или вечером. Плавно ведите смартфон вслед за движущимся объектом."
-        },
-        {
-          title: "С ручным режимом",
-          text:
-            "Используйте более длинную выдержку и сделайте серию. Конкретное значение зависит от скорости объекта и освещения."
-        }
-      ],
-      steps: [
-        "Выберите движущийся объект.",
-        "Сделайте один обычный кадр.",
-        "Плавно проведите смартфоном вслед за объектом.",
-        "Повторите движение несколько раз.",
-        "Оцените серию только после завершения."
-      ],
-      mistakes: [
-        "Дрожание камеры во всех направлениях.",
-        "Отсутствие хотя бы одного узнаваемого элемента.",
-        "Удаление вариантов сразу после съёмки."
-      ],
-      exercise:
-        "Сделайте десять кадров движения и выберите тот, где смаз лучше всего передаёт направление."
-    }
-  },
-  {
-    id: "one-place",
-    title: "Одно место — семь взглядов",
-    category: "Творческий кризис",
-    description:
-      "Знакомое место не становится скучным, если менять способ наблюдения.",
-    tags: ["кризис", "серия", "практика"],
-    audiences: ["Возвращаю вдохновение", "Ищу новые идеи"],
-    full: {
-      intro:
-        "Ощущение, что всё уже снято, часто означает, что повторяется не место, а привычный способ смотреть.",
-      sections: [
-        {
-          title: "Главный принцип",
-          text:
-            "Не ищите семь красивых фотографий. Проверьте семь разных способов увидеть одно пространство."
-        }
-      ],
-      steps: [
-        "Снимите общий вид.",
-        "Выберите одну небольшую деталь.",
-        "Снимите только тени.",
-        "Найдите отражение.",
-        "Опустите смартфон к земле.",
-        "Сделайте кадр без очевидного главного объекта.",
-        "Повторите один сюжет в монохроме."
-      ],
-      mistakes: [
-        "Оценивать результат во время съёмки.",
-        "Менять место вместо способа наблюдения.",
-        "Удалять фотографии сразу.",
-        "Требовать от каждого варианта публикационного качества."
-      ],
-      exercise:
-        "Оставьте серию до следующего дня. Затем выберите не самый красивый, а самый неожиданный кадр."
-    }
-  }
-];
-
-/* -------------------------------------------------------------------------- */
-/* Задания                                                                    */
-/* -------------------------------------------------------------------------- */
-
-const tasks = [
-  {
-    id: "task-window",
-    title: "Свет из окна",
-    description:
-      "Снимите один предмет мягким, контрастным и силуэтным способом.",
-    place: "дом",
-    period: "день",
-    season: "любой сезон",
-    technique: "естественный свет",
-    level: "Начинающий",
-    audiences: ["Начинаю", "Снимаю уверенно"],
-    visual: "light",
-    motivation:
-      "Не меняйте предмет — меняйте свет. Так разница станет заметнее.",
-    goal:
-      "Понять, как направление и жёсткость света меняют объём и настроение.",
-    preparation: [
-      "Выберите чашку, растение, книгу или стеклянную бутылку.",
-      "Поставьте предмет на стол рядом с окном.",
-      "Отключите верхний свет и вспышку.",
-      "Протрите объектив смартфона."
-    ],
-    steps: [
-      "Поставьте предмет так, чтобы свет падал сбоку.",
-      "Коснитесь предмета на экране для фокусировки.",
-      "Закройте окно тонкой занавеской и сделайте мягкую версию.",
-      "Уберите занавеску и сделайте контрастную версию.",
-      "Поставьте предмет перед окном.",
-      "Коснитесь светлого окна и потяните значок солнца вниз для силуэта."
-    ],
-    versions: [
-      {
-        title: "Мягкий",
-        text:
-          "Закройте окно тонкой занавеской или отодвиньте предмет. Тени должны стать плавными."
-      },
-      {
-        title: "Контрастный",
-        text:
-          "Поставьте предмет боком к открытому окну. Не подсвечивайте тёмную сторону."
-      },
-      {
-        title: "Силуэтный",
-        text:
-          "Поместите предмет перед окном. Экспозицию настройте по светлому фону."
-      }
-    ],
-    mistakes: [
-      "Использовать вспышку.",
-      "Оставлять включённым яркий верхний свет.",
-      "Не менять положение предмета между вариантами."
-    ],
-    alternatives:
-      "Если нет окна, используйте настольную лампу или фонарик второго телефона. Направляйте свет сбоку.",
-    challenge:
-      "Повторите упражнение с прозрачным предметом или человеком."
-  },
-  {
-    id: "task-ground",
-    title: "На уровне земли",
-    description:
-      "Снимите знакомое место с высоты не более двадцати сантиметров.",
-    place: "улица",
-    period: "день",
-    season: "любой сезон",
-    technique: "низкий ракурс",
-    level: "Начинающий",
-    audiences: ["Начинаю", "Ищу новые идеи"],
-    visual: "low",
-    motivation:
-      "Иногда новый сюжет находится не дальше, а ниже.",
-    goal:
-      "Понять, как высота камеры меняет масштаб и глубину пространства.",
-    preparation: [
-      "Выберите безопасное место: двор, парк, дорожку или подъезд.",
-      "Найдите передний план: травинку, камень, лужу или плитку.",
-      "Проверьте, что смартфон не окажется в воде или грязи."
-    ],
-    steps: [
-      "Сделайте обычный кадр с высоты глаз.",
-      "Присядьте и снимите тот же объект ниже.",
-      "Опустите смартфон почти к земле.",
-      "При необходимости переверните телефон камерой вниз.",
-      "Сделайте несколько кадров с разным наклоном.",
-      "Сравните ощущение масштаба."
-    ],
-    versions: [
-      {
-        title: "Обычный",
-        text:
-          "Снимите стоя. Этот кадр станет точкой сравнения."
-      },
-      {
-        title: "Низкий",
-        text:
-          "Опустите камеру ниже колена и добавьте передний план."
-      },
-      {
-        title: "Почти от земли",
-        text:
-          "Расположите объектив максимально близко к поверхности."
-      }
-    ],
-    mistakes: [
-      "Оставлять слишком много пустого неба.",
-      "Заваливать горизонт без художественной причины.",
-      "Использовать передний план, не связанный с сюжетом."
-    ],
-    alternatives:
-      "Дома используйте пол, стол или лестницу. Снимите предмет с уровня поверхности.",
-    challenge:
-      "Сделайте три фотографии одного объекта: сверху, на уровне глаз и снизу."
-  },
-  {
-    id: "task-shadow",
-    title: "Только тени",
-    description:
-      "Расскажите небольшую историю, почти не показывая сам объект.",
-    place: "улица",
-    period: "день",
-    season: "любой сезон",
-    technique: "свет и тень",
-    level: "Начинающий",
-    audiences: [
-      "Начинаю",
-      "Снимаю уверенно",
-      "Возвращаю вдохновение"
-    ],
-    visual: "shadow",
-    motivation:
-      "Необязательно показывать героя, чтобы зритель почувствовал его присутствие.",
-    goal:
-      "Научиться видеть сюжет в тенях и следах присутствия.",
-    preparation: [
-      "Ищите заметный направленный свет.",
-      "Подойдут деревья, лестницы, люди, велосипеды и перила.",
-      "Выберите простой фон без большого количества деталей."
-    ],
-    steps: [
-      "Найдите выразительную тень.",
-      "Сначала снимите только её.",
-      "Добавьте в следующий кадр небольшой фрагмент объекта.",
-      "Измените высоту камеры.",
-      "Сделайте вертикальный и горизонтальный варианты."
-    ],
-    versions: [
-      {
-        title: "Тень как герой",
-        text:
-          "Настоящий объект почти полностью остаётся за границей кадра."
-      },
-      {
-        title: "Объект и тень",
-        text:
-          "Покажите небольшой фрагмент объекта и его тень."
-      },
-      {
-        title: "Абстракция",
-        text:
-          "Подойдите ближе, чтобы происхождение тени было неочевидным."
-      }
-    ],
-    mistakes: [
-      "Слишком много случайного фона.",
-      "Тень сливается с другими пятнами.",
-      "Главная форма обрезана случайно."
-    ],
-    alternatives:
-      "Дома используйте настольную лампу, свет окна или фонарик.",
-    challenge:
-      "Создайте серию, где тени выглядят как самостоятельные персонажи."
-  },
-  {
-    id: "task-five",
-    title: "Только пять кадров",
-    description:
-      "Выберите один сюжет и разрешите себе сделать ровно пять фотографий.",
-    place: "где угодно",
-    period: "любое время",
-    season: "любой сезон",
-    technique: "осознанное ограничение",
-    level: "Любой",
-    audiences: [
-      "Начинаю",
-      "Снимаю уверенно",
-      "Ищу новые идеи",
-      "Возвращаю вдохновение"
-    ],
-    visual: "frames",
-    motivation:
-      "Ограничение уменьшает количество решений и освобождает внимание.",
-    goal:
-      "Перестать снимать случайно и начать осознанно менять подход.",
-    preparation: [
-      "Выберите один предмет, человека или небольшую сцену.",
-      "Решите, что каждый кадр должен отличаться.",
-      "Не удаляйте фотографии во время упражнения."
-    ],
-    steps: [
-      "Кадр 1 — общий вид.",
-      "Кадр 2 — подойдите ближе.",
-      "Кадр 3 — измените высоту камеры.",
-      "Кадр 4 — найдите тень или отражение.",
-      "Кадр 5 — уберите очевидный главный объект."
-    ],
-    versions: [
-      {
-        title: "Общий вид",
-        text:
-          "Покажите объект вместе с окружающим пространством."
-      },
-      {
-        title: "Деталь",
-        text:
-          "Заполните кадр только частью объекта."
-      },
-      {
-        title: "Иной взгляд",
-        text:
-          "Измените ракурс, свет или способ кадрирования."
-      }
-    ],
-    mistakes: [
-      "Сделать пять почти одинаковых фотографий.",
-      "Удалять варианты сразу.",
-      "Считать упражнение неудачным без идеального кадра."
-    ],
-    alternatives:
-      "Задание можно выполнить дома, по дороге или во время ожидания.",
-    challenge:
-      "Повторите упражнение завтра с тем же объектом, но при другом освещении."
-  },
-  {
-    id: "task-orbit",
-    title: "Обойдите предмет",
-    description:
-      "Оставьте предмет на месте и найдите несколько фотографий, двигаясь вокруг него.",
-    place: "где угодно",
-    period: "любое время",
-    season: "любой сезон",
-    technique: "смена точки съёмки",
-    level: "Продолжающий",
-    audiences: ["Снимаю уверенно", "Ищу новые идеи"],
-    visual: "orbit",
-    motivation:
-      "Первый ракурс сообщает, что перед вами. Следующие показывают, как вы это увидели.",
-    goal:
-      "Научиться искать точку съёмки до использования фильтров и обработки.",
-    preparation: [
-      "Выберите предмет, который можно обойти.",
-      "Оставьте его на одном месте.",
-      "Используйте один объектив без цифрового зума."
-    ],
-    steps: [
-      "Сделайте первый кадр прямо перед предметом.",
-      "Сместитесь немного влево и повторите.",
-      "Снимите предмет сбоку.",
-      "Опустите смартфон ниже предмета.",
-      "Поднимите смартфон выше.",
-      "Выберите ракурс, где фон меньше всего мешает."
-    ],
-    versions: [
-      {
-        title: "Фронтально",
-        text:
-          "Покажите предмет максимально понятно."
-      },
-      {
-        title: "Сбоку",
-        text:
-          "Используйте боковой свет и изменившийся фон."
-      },
-      {
-        title: "Неожиданно",
-        text:
-          "Снимите сверху, снизу или через другой объект."
-      }
-    ],
-    mistakes: [
-      "Оставаться на одном месте и использовать только зум.",
-      "Не обращать внимания на фон.",
-      "Менять сразу и ракурс, и обработку."
-    ],
-    alternatives:
-      "Используйте чашку, растение, стул, дерево или припаркованный велосипед.",
-    challenge:
-      "Соберите три кадра, которые выглядят как части одной истории."
-  },
-  {
-    id: "task-reflection",
-    title: "Второй мир",
-    description:
-      "Совместите настоящий объект и его отражение в одном кадре.",
-    place: "улица",
-    period: "день или вечер",
-    season: "любой сезон",
-    technique: "отражение",
-    level: "Продолжающий",
-    audiences: ["Снимаю уверенно", "Ищу новые идеи"],
-    visual: "orbit",
-    motivation:
-      "Отражение не обязано повторять реальность — оно может спорить с ней.",
-    goal:
-      "Создать многослойную фотографию с двумя пространствами.",
-    preparation: [
-      "Найдите витрину, лужу, стекло или металлическую поверхность.",
-      "Проверьте фон отражения.",
-      "Протрите объектив."
-    ],
-    steps: [
-      "Подойдите к поверхности под прямым углом.",
-      "Затем медленно смещайтесь в сторону.",
-      "Найдите момент, когда реальный объект и отражение соединяются.",
-      "Коснитесь главного элемента для фокусировки.",
-      "Сделайте симметричный и несимметричный варианты."
-    ],
-    versions: [
-      {
-        title: "Симметрия",
-        text:
-          "Разместите границу отражения по центру."
-      },
-      {
-        title: "Слои",
-        text:
-          "Совместите то, что находится за стеклом, с отражением улицы."
-      },
-      {
-        title: "Только отражение",
-        text:
-          "Исключите реальный объект и оставьте визуальную загадку."
-      }
-    ],
-    mistakes: [
-      "Не замечать собственное отражение.",
-      "Оставлять слишком много деталей.",
-      "Всегда размещать границу отражения по центру."
-    ],
-    alternatives:
-      "Дома используйте зеркало, ложку, тёмный экран или стеклянную дверцу.",
-    challenge:
-      "Сделайте кадр, где зритель не сразу поймёт, что является отражением."
-  }
-];
-
-/* -------------------------------------------------------------------------- */
-/* Настройки и состояние                                                      */
-/* -------------------------------------------------------------------------- */
-
-const levels = [
-  {
-    value: "Начинаю",
-    description: "Больше объяснений и базовых упражнений"
-  },
-  {
-    value: "Снимаю уверенно",
-    description: "Серии, свет, отражения и осознанная композиция"
-  },
-  {
-    value: "Ищу новые идеи",
-    description: "Эксперименты, ограничения и необычные приёмы"
-  },
-  {
-    value: "Возвращаю вдохновение",
-    description: "Мягкие задания без требования получить шедевр"
-  }
-];
-
-const fontSizes = [
-  {
-    value: "compact",
-    label: "Компактный",
-    description: "Больше информации помещается на экране"
-  },
-  {
-    value: "normal",
-    label: "Обычный",
-    description: "Основной размер для большинства экранов"
-  },
-  {
-    value: "large",
-    label: "Крупный",
-    description: "Увеличенные инструкции и описания"
-  },
-  {
-    value: "extra-large",
-    label: "Очень крупный",
-    description: "Максимально комфортное чтение"
-  }
-];
-
-const placeOptions = [
-  { value: "все", label: "Любое место" },
-  { value: "дом", label: "Дома" },
-  { value: "улица", label: "На улице" },
-  { value: "где угодно", label: "Где угодно" }
-];
-
-const periodOptions = [
-  { value: "все", label: "Любое время" },
-  { value: "день", label: "Днём" },
-  { value: "вечер", label: "Вечером" },
-  { value: "ночь", label: "Ночью" }
-];
+const STORAGE_KEY = "vne-kadra-state-v6";
 
 const defaultState = {
   screen: "today",
   theme: "dark",
   fontSize: "normal",
   level: "Ищу новые идеи",
+  season: "auto",
   dailyCount: 3,
 
   favorites: [],
   completedTasks: [],
 
   selectedTaskId: null,
-
-  filterPlace: "все",
-  filterPeriod: "все",
+  selectedArticleId: null,
+  selectedCrisisId: null,
 
   learnQuery: "",
   learnCategory: "Все",
+  learnMode: "catalog",
+
+  filterPlace: "все",
+  filterPeriod: "все",
+  filterCondition: "все",
 
   dailyOverrides: {}
 };
 
 let state = loadState();
+let deferredInstallPrompt = null;
+
+const levels = [
+  ["Начинаю", "Базовые упражнения с подробными инструкциями"],
+  ["Снимаю уверенно", "Композиция, серии, свет и жанры"],
+  ["Ищу новые идеи", "Эксперименты и необычные ограничения"],
+  ["Возвращаю вдохновение", "Мягкая практика без требования результата"]
+];
+
+const fontSizes = [
+  ["compact", "Компактный"],
+  ["normal", "Обычный"],
+  ["large", "Крупный"],
+  ["extra-large", "Очень крупный"]
+];
+
+const seasonOptions = [
+  ["auto", "Определять автоматически"],
+  ["все", "Не учитывать сезон"],
+  ["весна", "Весна"],
+  ["лето", "Лето"],
+  ["осень", "Осень"],
+  ["зима", "Зима"]
+];
+
+const placeOptions = [
+  ["все", "Любое место"],
+  ["дом", "Дома"],
+  ["улица", "На улице"],
+  ["где угодно", "Где угодно"]
+];
+
+const periodOptions = [
+  ["все", "Любое время"],
+  ["день", "Днём"],
+  ["вечер", "Вечером"],
+  ["ночь", "Ночью"],
+  ["утро", "Утром"]
+];
+
+const conditionOptions = [
+  ["все", "Любые условия"],
+  ["солнце", "Солнечно"],
+  ["дождь", "Дождь"],
+  ["снег", "Снег"],
+  ["туман", "Туман"],
+  ["любая", "Без привязки"]
+];
 
 function loadState() {
   try {
     const saved =
       localStorage.getItem(STORAGE_KEY) ||
+      localStorage.getItem("vne-kadra-state-v5") ||
       localStorage.getItem("vne-kadra-state");
 
-    if (!saved) {
-      return { ...defaultState };
-    }
-
-    return {
-      ...defaultState,
-      ...JSON.parse(saved)
-    };
+    return saved
+      ? { ...defaultState, ...JSON.parse(saved) }
+      : { ...defaultState };
   } catch {
     return { ...defaultState };
   }
@@ -776,19 +124,16 @@ function showToast(message) {
 
   showToast.timer = setTimeout(() => {
     toast.classList.remove("show");
-  }, 2700);
+  }, 2600);
 }
 
-function scrollToTop(behavior = "smooth") {
+function scrollTop(behavior = "smooth") {
   requestAnimationFrame(() => {
-    window.scrollTo({
-      top: 0,
-      behavior
-    });
+    window.scrollTo({ top: 0, behavior });
   });
 }
 
-function localDateKey() {
+function dateKey() {
   const date = new Date();
 
   return [
@@ -799,9 +144,33 @@ function localDateKey() {
 }
 
 function dateSeed() {
-  return localDateKey()
-    .split("")
-    .reduce((sum, character) => sum + character.charCodeAt(0), 0);
+  return [...dateKey()].reduce(
+    (sum, character, index) =>
+      sum + character.charCodeAt(0) * (index + 1),
+    0
+  );
+}
+
+function currentSeason() {
+  if (state.season !== "auto") {
+    return state.season;
+  }
+
+  const month = new Date().getMonth() + 1;
+
+  if ([12, 1, 2].includes(month)) return "зима";
+  if ([3, 4, 5].includes(month)) return "весна";
+  if ([6, 7, 8].includes(month)) return "лето";
+
+  return "осень";
+}
+
+function seasonLabel() {
+  const season = currentSeason();
+
+  if (season === "все") return "Любой сезон";
+
+  return season.charAt(0).toUpperCase() + season.slice(1);
 }
 
 function formatDate() {
@@ -812,24 +181,20 @@ function formatDate() {
   }).format(new Date());
 }
 
-function formatLevel(level) {
-  if (level === "Начинающий") return "Начинающий";
-  if (level === "Продолжающий") return "Продолжающий";
-  return "Любой уровень";
+function labelOf(options, value) {
+  return options.find((item) => item[0] === value)?.[1] || value;
 }
 
-function fontLabel(value) {
-  return (
-    fontSizes.find((item) => item.value === value)?.label ||
-    "Обычный"
-  );
-}
+function applyPreferences() {
+  document.documentElement.dataset.theme = state.theme;
+  document.documentElement.dataset.font = state.fontSize;
 
-function optionLabel(options, value) {
-  return (
-    options.find((item) => item.value === value)?.label ||
-    options[0].label
-  );
+  const color = document.querySelector('meta[name="theme-color"]');
+
+  if (color) {
+    color.content =
+      state.theme === "dark" ? "#11100f" : "#f4f0eb";
+  }
 }
 
 function isFavorite(id) {
@@ -840,127 +205,77 @@ function isCompleted(id) {
   return state.completedTasks.includes(id);
 }
 
-function applyPreferences() {
-  document.documentElement.dataset.theme = state.theme;
-  document.documentElement.dataset.font = state.fontSize;
+function levelMatches(task) {
+  if (task.levels.includes("все")) return true;
 
-  const themeColor = document.querySelector(
-    'meta[name="theme-color"]'
-  );
-
-  if (themeColor) {
-    themeColor.content =
-      state.theme === "dark" ? "#11100f" : "#f4f0eb";
-  }
-}
-
-function updateNavigation() {
-  document.querySelectorAll(".nav-item").forEach((button) => {
-    button.classList.toggle(
-      "active",
-      button.dataset.screen === state.screen
+  if (state.level === "Возвращаю вдохновение") {
+    return (
+      task.category === "Кризис" ||
+      task.id === "five-frames" ||
+      task.place === "дом"
     );
-  });
+  }
+
+  return task.levels.includes(state.level);
 }
 
-/* -------------------------------------------------------------------------- */
-/* Персонализация рекомендаций                                                */
-/* -------------------------------------------------------------------------- */
+function seasonMatches(task) {
+  const season = currentSeason();
+
+  return (
+    season === "все" ||
+    task.seasons.includes("все") ||
+    task.seasons.includes(season)
+  );
+}
 
 function recommendedTasks() {
-  const matched = tasks.filter((task) =>
-    task.audiences.includes(state.level)
+  const result = tasks.filter(
+    (task) => levelMatches(task) && seasonMatches(task)
   );
 
-  if (matched.length >= 3) {
-    return matched;
-  }
-
-  return [
-    ...matched,
-    ...tasks.filter((task) => !matched.includes(task))
-  ];
+  return result.length >= 3 ? result : tasks.filter(seasonMatches);
 }
 
-function seededOrder(items, seed) {
-  return [...items].sort((first, second) => {
-    const firstValue = stringSeed(`${first.id}-${seed}`);
-    const secondValue = stringSeed(`${second.id}-${seed}`);
-
-    return firstValue - secondValue;
-  });
-}
-
-function stringSeed(value) {
-  return value
-    .split("")
-    .reduce(
-      (sum, character, index) =>
-        sum + character.charCodeAt(0) * (index + 1),
+function stableSort(items, seed) {
+  const score = (id) =>
+    [...`${id}-${seed}`].reduce(
+      (sum, char, index) =>
+        sum + char.charCodeAt(0) * (index + 1),
       0
     );
+
+  return [...items].sort(
+    (first, second) => score(first.id) - score(second.id)
+  );
 }
 
-function generatedDailyIds() {
-  const ordered = seededOrder(recommendedTasks(), dateSeed());
-  const selected = [];
+function dailyIds() {
+  const key = dateKey();
 
-  for (const task of ordered) {
-    if (!selected.includes(task.id)) {
-      selected.push(task.id);
-    }
-
-    if (selected.length === 3) {
-      break;
-    }
+  if (Array.isArray(state.dailyOverrides[key])) {
+    return state.dailyOverrides[key];
   }
 
-  for (const task of tasks) {
-    if (!selected.includes(task.id)) {
-      selected.push(task.id);
+  const source = stableSort(recommendedTasks(), dateSeed());
+  const ids = [];
+
+  for (const item of [...source, ...tasks]) {
+    if (!ids.includes(item.id)) {
+      ids.push(item.id);
     }
 
-    if (selected.length === 3) {
-      break;
-    }
+    if (ids.length === 3) break;
   }
 
-  return selected;
-}
-
-function getDailyIds() {
-  const key = localDateKey();
-  const saved = state.dailyOverrides[key];
-
-  if (Array.isArray(saved) && saved.length) {
-    return [...saved];
-  }
-
-  const generated = generatedDailyIds();
-  state.dailyOverrides[key] = generated;
-  cleanupOldDailyOverrides();
+  state.dailyOverrides[key] = ids;
   saveState();
 
-  return generated;
+  return ids;
 }
 
-function cleanupOldDailyOverrides() {
-  const keys = Object.keys(state.dailyOverrides);
-
-  if (keys.length <= 14) {
-    return;
-  }
-
-  keys
-    .sort()
-    .slice(0, keys.length - 14)
-    .forEach((key) => {
-      delete state.dailyOverrides[key];
-    });
-}
-
-function getDailyTasks() {
-  return getDailyIds()
+function dailyTasks() {
+  return dailyIds()
     .map((id) => tasks.find((task) => task.id === id))
     .filter(Boolean)
     .slice(0, state.dailyCount);
@@ -968,7 +283,7 @@ function getDailyTasks() {
 
 function mainDailyTask() {
   return (
-    tasks.find((task) => task.id === getDailyIds()[0]) ||
+    tasks.find((task) => task.id === dailyIds()[0]) ||
     tasks[0]
   );
 }
@@ -980,58 +295,33 @@ function currentTask() {
   );
 }
 
-function changeDailyTask(index = 0) {
-  const key = localDateKey();
-  const ids = getDailyIds();
-
-  const excluded = new Set(ids);
-  const recommended = recommendedTasks();
-
-  let available = recommended.filter(
-    (task) => !excluded.has(task.id)
-  );
-
-  if (!available.length) {
-    available = tasks.filter(
-      (task) => task.id !== ids[index]
+function updateNavigation() {
+  document.querySelectorAll(".nav-item").forEach((button) => {
+    button.classList.toggle(
+      "active",
+      button.dataset.screen === state.screen
     );
-  }
-
-  if (!available.length) {
-    return;
-  }
-
-  const selected =
-    available[Math.floor(Math.random() * available.length)];
-
-  ids[index] = selected.id;
-  state.dailyOverrides[key] = ids;
-  saveState();
-
-  renderToday(true);
-  showToast("Задание на сегодня изменено");
+  });
 }
 
-/* -------------------------------------------------------------------------- */
-/* Основная навигация                                                         */
-/* -------------------------------------------------------------------------- */
-
-function setScreen(screen, shouldScroll = true) {
+function setScreen(screen) {
   state.screen = screen;
+
+  if (screen !== "learn") {
+    state.learnMode = "catalog";
+  }
+
   saveState();
   render();
-
-  if (shouldScroll) {
-    scrollToTop();
-  }
+  scrollTop();
 }
 
-function openTask(taskId) {
-  state.selectedTaskId = taskId;
+function openTask(id) {
+  state.selectedTaskId = id;
   state.screen = "shoot";
   saveState();
   render();
-  scrollToTop("auto");
+  scrollTop("auto");
 }
 
 function render() {
@@ -1045,14 +335,9 @@ function render() {
   if (state.screen === "profile") renderProfile();
 }
 
-/* -------------------------------------------------------------------------- */
-/* Главная                                                                    */
-/* -------------------------------------------------------------------------- */
-
-function renderToday(animateHero = false) {
-  const dailyTasks = getDailyTasks();
-  const mainTask = dailyTasks[0] || mainDailyTask();
-  const additionalTasks = dailyTasks.slice(1);
+function renderToday(animate = false) {
+  const dayTasks = dailyTasks();
+  const main = dayTasks[0] || mainDailyTask();
 
   app.innerHTML = `
     <section class="screen">
@@ -1060,32 +345,28 @@ function renderToday(animateHero = false) {
         <span class="date-label">${escapeHtml(formatDate())}</span>
         <h2>Смотри чуть дальше.</h2>
         <p>
-          Сегодня не нужно искать идеальный сюжет. Достаточно изменить
-          один привычный способ смотреть.
+          ${escapeHtml(seasonLabel())}. Рекомендации учитывают выбранный
+          уровень и время года.
         </p>
       </div>
 
-      <article class="hero-card ${
-        animateHero ? "is-changing" : ""
-      }">
+      <article class="hero-card ${animate ? "is-changing" : ""}">
         <div class="hero-content">
           <p class="hero-kicker">Главное задание</p>
-          <h2>${escapeHtml(mainTask.title)}</h2>
+          <h2>${escapeHtml(main.title)}</h2>
           <p class="hero-description">
-            ${escapeHtml(mainTask.description)}
+            ${escapeHtml(main.description)}
           </p>
         </div>
 
         <div class="hero-footer">
-          <span class="hero-meta">
-            ${escapeHtml(mainTask.technique)}
-          </span>
+          <span class="hero-meta">${escapeHtml(main.category)}</span>
 
           <div class="hero-actions">
             <button
               class="primary-button"
               type="button"
-              data-action="open-main-daily"
+              data-action="open-main-task"
             >
               Начать
             </button>
@@ -1093,9 +374,8 @@ function renderToday(animateHero = false) {
             <button
               class="hero-change-button"
               type="button"
-              data-action="change-main-daily"
-              aria-label="Сменить главное задание"
-              title="Сменить задание"
+              data-action="change-daily"
+              aria-label="Сменить задание"
             >
               ↻
             </button>
@@ -1104,36 +384,17 @@ function renderToday(animateHero = false) {
       </article>
 
       ${
-        additionalTasks.length
+        dayTasks.length > 1
           ? `
             <div class="section-header">
               <h3>Ещё на сегодня</h3>
-              <span class="date-label">
-                ${dailyTasks.length} задания
-              </span>
+              <span class="date-label">${dayTasks.length}</span>
             </div>
 
             <div class="daily-list">
-              ${additionalTasks
-                .map(
-                  (task) => `
-                    <button
-                      class="daily-mini-card"
-                      type="button"
-                      data-task="${escapeHtml(task.id)}"
-                    >
-                      <span>
-                        <strong>${escapeHtml(task.title)}</strong>
-                        <small>
-                          ${escapeHtml(task.technique)} ·
-                          ${escapeHtml(task.place)}
-                        </small>
-                      </span>
-
-                      <span class="arrow">→</span>
-                    </button>
-                  `
-                )
+              ${dayTasks
+                .slice(1)
+                .map(taskMiniCard)
                 .join("")}
             </div>
           `
@@ -1142,65 +403,48 @@ function renderToday(animateHero = false) {
 
       <div class="section-header">
         <h3>Быстрый выбор</h3>
-        <button type="button" data-action="open-shoot">
+        <button type="button" data-action="open-all-tasks">
           Все задания
         </button>
       </div>
 
       <div class="quick-grid">
-        <button
-          class="quick-card"
-          type="button"
-          data-action="random-task"
-        >
+        <button class="quick-card" type="button" data-action="random">
           <span class="quick-icon">⤨</span>
           <strong>Случайная идея</strong>
-          <small>Выбрать рекомендацию без долгих раздумий</small>
+          <small>С учётом уровня и сезона</small>
         </button>
 
-        <button
-          class="quick-card"
-          type="button"
-          data-action="home-task"
-        >
+        <button class="quick-card" type="button" data-action="home">
           <span class="quick-icon">⌂</span>
           <strong>Снять дома</strong>
           <small>Практика без выхода на улицу</small>
         </button>
 
-        <button
-          class="quick-card"
-          type="button"
-          data-action="crisis-task"
-        >
+        <button class="quick-card" type="button" data-action="inspiration">
           <span class="quick-icon">↻</span>
-          <strong>Нет вдохновения</strong>
-          <small>Мягкое задание без требования результата</small>
+          <strong>Вернуть вдохновение</strong>
+          <small>Спокойные маршруты без давления</small>
         </button>
 
-        <button
-          class="quick-card"
-          type="button"
-          data-action="open-learn"
-        >
+        <button class="quick-card" type="button" data-action="learn">
           <span class="quick-icon">✦</span>
-          <strong>Новая техника</strong>
-          <small>Узнать один новый способ снимать</small>
+          <strong>Изучить приём</strong>
+          <small>Открыть энциклопедию</small>
         </button>
       </div>
 
       <div class="section-header">
-        <h3>Небольшое наблюдение</h3>
+        <h3>Наблюдение</h3>
       </div>
 
       <div class="info-card">
-        <div class="info-card-icon">◌</div>
-
+        <div class="info-icon">◌</div>
         <div>
-          <h3>Не ищите новый мир</h3>
+          <h3>Не обязательно ехать далеко</h3>
           <p>
-            Попробуйте изменить расстояние, высоту камеры, направление
-            света или способ кадрирования уже знакомого места.
+            Смена высоты камеры, света или расстояния часто меняет
+            знакомое место сильнее, чем новый маршрут.
           </p>
         </div>
       </div>
@@ -1208,41 +452,56 @@ function renderToday(animateHero = false) {
   `;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Энциклопедия                                                               */
-/* -------------------------------------------------------------------------- */
-
-function filteredArticles() {
-  const query = state.learnQuery.trim().toLowerCase();
-  const category = state.learnCategory;
-
-  return articles.filter((article) => {
-    const categoryMatches =
-      category === "Все" || article.category === category;
-
-    const searchText = [
-      article.title,
-      article.category,
-      article.description,
-      article.tags.join(" ")
-    ]
-      .join(" ")
-      .toLowerCase();
-
-    return categoryMatches && searchText.includes(query);
-  });
+function taskMiniCard(task) {
+  return `
+    <button
+      class="card daily-mini-card"
+      type="button"
+      data-task="${escapeHtml(task.id)}"
+    >
+      <span>
+        <strong>${escapeHtml(task.title)}</strong>
+        <small>
+          ${escapeHtml(task.category)} · ${escapeHtml(task.place)}
+        </small>
+      </span>
+      <span class="arrow">→</span>
+    </button>
+  `;
 }
 
+function changeDailyTask() {
+  const ids = dailyIds();
+  const available = recommendedTasks().filter(
+    (task) => !ids.includes(task.id)
+  );
+
+  const pool = available.length
+    ? available
+    : tasks.filter((task) => task.id !== ids[0]);
+
+  const replacement =
+    pool[Math.floor(Math.random() * pool.length)];
+
+  ids[0] = replacement.id;
+  state.dailyOverrides[dateKey()] = ids;
+  saveState();
+
+  renderToday(true);
+  showToast("Главное задание изменено");
+}
+
+/* Энциклопедия */
+
 function renderLearn() {
-  const categories = [
+  if (state.learnMode === "inspiration") {
+    renderInspiration();
+    return;
+  }
+
+  const categoryNames = [
     "Все",
-    "Основы",
-    "Свет",
-    "Ракурсы",
-    "Цвет",
-    "Движение",
-    "Необычные приёмы",
-    "Творческий кризис"
+    ...categories.map((item) => item.name)
   ];
 
   app.innerHTML = `
@@ -1250,25 +509,64 @@ function renderLearn() {
       <div class="screen-heading">
         <h2>Изучать</h2>
         <p>
-          Техники, объяснения и упражнения для съёмки на смартфон.
+          Энциклопедия приёмов, жанров и способов видеть привычное иначе.
         </p>
       </div>
 
       <div class="search-box">
         <span class="search-icon">⌕</span>
-
         <input
           id="articleSearch"
           type="search"
-          inputmode="search"
           autocomplete="off"
-          placeholder="Найти технику или идею"
+          placeholder="Найти технику или жанр"
           value="${escapeHtml(state.learnQuery)}"
         />
       </div>
 
+      ${
+        !state.learnQuery && state.learnCategory === "Все"
+          ? `
+            <div class="catalog-grid">
+              ${categories
+                .map(
+                  (category) => `
+                    <button
+                      class="catalog-card"
+                      type="button"
+                      data-catalog="${escapeHtml(category.name)}"
+                    >
+                      <span class="catalog-icon">
+                        ${escapeHtml(category.icon)}
+                      </span>
+                      <strong>${escapeHtml(category.name)}</strong>
+                      <small>${escapeHtml(category.description)}</small>
+                    </button>
+                  `
+                )
+                .join("")}
+
+              <button
+                class="catalog-card"
+                type="button"
+                data-action="inspiration"
+              >
+                <span class="catalog-icon">↻</span>
+                <strong>Вдохновение</strong>
+                <small>Помощь при творческом кризисе</small>
+              </button>
+            </div>
+          `
+          : ""
+      }
+
+      <div class="section-header">
+        <h3>Материалы</h3>
+        <span class="date-label" id="articleCount"></span>
+      </div>
+
       <div class="chips">
-        ${categories
+        ${categoryNames
           .map(
             (category) => `
               <button
@@ -1285,56 +583,66 @@ function renderLearn() {
           .join("")}
       </div>
 
-      <div id="articleResults" class="article-list">
-        ${renderArticleResults()}
-      </div>
+      <div id="articleResults" class="card-list"></div>
     </section>
   `;
 
-  const searchInput = document.querySelector("#articleSearch");
+  updateArticleResults();
 
-  searchInput?.addEventListener("input", (event) => {
-    state.learnQuery = event.target.value;
-    saveState();
-
-    const results = document.querySelector("#articleResults");
-
-    if (results) {
-      results.innerHTML = renderArticleResults();
-    }
-  });
+  document
+    .querySelector("#articleSearch")
+    ?.addEventListener("input", (event) => {
+      state.learnQuery = event.target.value;
+      saveState();
+      updateArticleResults();
+    });
 }
 
-function renderArticleResults() {
-  const filtered = filteredArticles();
+function articleMatches(article) {
+  const query = state.learnQuery.trim().toLowerCase();
 
-  if (!filtered.length) {
-    return `
-      <div class="empty-state">
-        Ничего не найдено.<br />
-        Попробуйте изменить запрос или категорию.
-      </div>
-    `;
-  }
+  const categoryMatch =
+    state.learnCategory === "Все" ||
+    article.category === state.learnCategory;
 
-  return filtered.map(articleCard).join("");
+  const text = [
+    article.title,
+    article.category,
+    article.description,
+    article.tags.join(" ")
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  return categoryMatch && text.includes(query);
+}
+
+function updateArticleResults() {
+  const filtered = articles.filter(articleMatches);
+  const container = document.querySelector("#articleResults");
+  const counter = document.querySelector("#articleCount");
+
+  if (counter) counter.textContent = filtered.length;
+
+  if (!container) return;
+
+  container.innerHTML = filtered.length
+    ? filtered.map(articleCard).join("")
+    : `<div class="empty-state">Ничего не найдено.</div>`;
 }
 
 function articleCard(article) {
   return `
     <button
-      class="article-card"
+      class="card"
       type="button"
       data-article="${escapeHtml(article.id)}"
     >
-      <div class="article-topline">
-        <span class="article-category">
+      <div class="card-top">
+        <span class="category-label">
           ${escapeHtml(article.category)}
         </span>
-
-        <span class="favorite ${
-          isFavorite(article.id) ? "is-favorite" : ""
-        }">
+        <span class="favorite ${isFavorite(article.id) ? "active" : ""}">
           ${isFavorite(article.id) ? "♥" : "♡"}
         </span>
       </div>
@@ -1342,82 +650,52 @@ function articleCard(article) {
       <h3>${escapeHtml(article.title)}</h3>
       <p>${escapeHtml(article.description)}</p>
 
-      <div class="tag-row">
+      <div class="tags">
         ${article.tags
-          .slice(0, 3)
-          .map(
-            (tag) => `
-              <span class="tag">${escapeHtml(tag)}</span>
-            `
-          )
+          .map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`)
           .join("")}
       </div>
     </button>
   `;
 }
 
-function renderArticle(articleId) {
-  const article = articles.find((item) => item.id === articleId);
+function renderArticle(id) {
+  const article = articles.find((item) => item.id === id);
 
-  if (!article) {
-    setScreen("learn");
-    return;
-  }
+  if (!article) return;
 
-  const full = article.full;
+  state.selectedArticleId = id;
+  saveState();
 
   app.innerHTML = `
     <article class="article-detail">
-      <button
-        class="back-button"
-        type="button"
-        data-action="back-learn"
-      >
-        ← Назад к материалам
+      <button class="back-button" type="button" data-action="back-learn">
+        ← Назад к энциклопедии
       </button>
 
-      <div class="article-topline">
-        <span class="article-category">
+      <div class="card-top">
+        <span class="category-label">
           ${escapeHtml(article.category)}
         </span>
 
         <button
           class="ghost-button"
           type="button"
-          data-action="toggle-article-favorite"
+          data-action="favorite"
           data-id="${escapeHtml(article.id)}"
         >
-          ${
-            isFavorite(article.id)
-              ? "♥ В коллекции"
-              : "♡ Сохранить"
-          }
+          ${isFavorite(id) ? "♥ В коллекции" : "♡ Сохранить"}
         </button>
       </div>
 
       <h2>${escapeHtml(article.title)}</h2>
-      <p class="article-lead">${escapeHtml(full.intro)}</p>
-
-      ${full.sections
-        .map(
-          (section) => `
-            <section class="detail-section">
-              <h3>${escapeHtml(section.title)}</h3>
-              <p>${escapeHtml(section.text)}</p>
-            </section>
-          `
-        )
-        .join("")}
+      <p class="article-lead">${escapeHtml(article.intro)}</p>
 
       <section class="detail-section">
-        <h3>Пошагово</h3>
+        <h3>Как применять</h3>
         <ol>
-          ${full.steps
-            .map(
-              (step) => `
-                <li>${escapeHtml(step)}</li>
-              `
-            )
+          ${article.points
+            .map((item) => `<li>${escapeHtml(item)}</li>`)
             .join("")}
         </ol>
       </section>
@@ -1425,156 +703,248 @@ function renderArticle(articleId) {
       <section class="detail-section">
         <h3>Типичные ошибки</h3>
         <ul>
-          ${full.mistakes
-            .map(
-              (mistake) => `
-                <li>${escapeHtml(mistake)}</li>
-              `
-            )
+          ${article.mistakes
+            .map((item) => `<li>${escapeHtml(item)}</li>`)
             .join("")}
         </ul>
       </section>
 
       <section class="detail-section">
         <h3>Практика</h3>
-        <div class="notice">
-          ${escapeHtml(full.exercise)}
-        </div>
+        <div class="notice">${escapeHtml(article.exercise)}</div>
       </section>
     </article>
   `;
 
-  scrollToTop("auto");
+  scrollTop("auto");
 }
 
-/* -------------------------------------------------------------------------- */
-/* Задания                                                                    */
-/* -------------------------------------------------------------------------- */
+/* Вдохновение */
+
+function renderInspiration() {
+  const selected = crisisRoutes.find(
+    (route) => route.id === state.selectedCrisisId
+  );
+
+  if (selected) {
+    app.innerHTML = `
+      <section class="screen">
+        <button class="back-button" type="button" data-action="crisis-list">
+          ← Все состояния
+        </button>
+
+        <div class="screen-heading">
+          <h2>${escapeHtml(selected.title)}</h2>
+          <p>${escapeHtml(selected.description)}</p>
+        </div>
+
+        <div class="card crisis-card">
+          ${selected.steps
+            .map(
+              (step, index) => `
+                <div class="route-step">
+                  <span class="route-number">${index + 1}</span>
+                  <p>${escapeHtml(step)}</p>
+                </div>
+              `
+            )
+            .join("")}
+        </div>
+
+        <div class="motivation">
+          ✦ Цель маршрута — не получить идеальный кадр, а снова начать
+          замечать.
+        </div>
+
+        <button
+          class="primary-button"
+          type="button"
+          data-action="crisis-task"
+        >
+          Подобрать практическое задание
+        </button>
+      </section>
+    `;
+
+    scrollTop("auto");
+    return;
+  }
+
+  app.innerHTML = `
+    <section class="screen">
+      <button class="back-button" type="button" data-action="back-learn">
+        ← Назад к энциклопедии
+      </button>
+
+      <div class="screen-heading">
+        <h2>Вернуть вдохновение</h2>
+        <p>
+          Выберите состояние, которое сейчас ближе всего. Здесь нет
+          обязательной серии дней и оценки результата.
+        </p>
+      </div>
+
+      <div class="card-list">
+        ${crisisRoutes
+          .map(
+            (route) => `
+              <button
+                class="card crisis-card"
+                type="button"
+                data-crisis="${escapeHtml(route.id)}"
+              >
+                <h3>${escapeHtml(route.title)}</h3>
+                <p>${escapeHtml(route.description)}</p>
+              </button>
+            `
+          )
+          .join("")}
+      </div>
+    </section>
+  `;
+}
+
+/* Задания */
+
+function filteredTasks() {
+  return tasks.filter((task) => {
+    const place =
+      state.filterPlace === "все" ||
+      task.place === state.filterPlace ||
+      task.place === "где угодно";
+
+    const period =
+      state.filterPeriod === "все" ||
+      task.period.includes(state.filterPeriod) ||
+      task.period === "любое время";
+
+    const condition =
+      state.filterCondition === "все" ||
+      task.conditions.includes(state.filterCondition) ||
+      task.conditions.includes("любая");
+
+    return place && period && condition && seasonMatches(task);
+  });
+}
 
 function renderShoot() {
-  const task = currentTask();
-  const filtered = filteredTasks();
+  const selected = currentTask();
+  const list = filteredTasks();
 
   app.innerHTML = `
     <section class="screen">
       <div class="screen-heading">
         <h2>Снять</h2>
         <p>
-          Прочитайте инструкцию, попробуйте несколько вариантов и
-          оценивайте результат только после съёмки.
+          Используйте инструкцию как отправную точку, а не как строгий
+          набор правил.
         </p>
       </div>
 
-      ${taskCardDetailed(task)}
+      ${detailedTask(selected)}
 
       <div class="section-header">
         <h3>Фильтры</h3>
       </div>
 
-      <div class="filter-row">
-        <button
-          class="filter-button"
-          type="button"
-          data-action="choose-place"
-        >
-          ${escapeHtml(optionLabel(placeOptions, state.filterPlace))}
-        </button>
+      <div class="filter-grid">
+        ${filterButton(
+          "place",
+          labelOf(placeOptions, state.filterPlace)
+        )}
 
-        <button
-          class="filter-button"
-          type="button"
-          data-action="choose-period"
-        >
-          ${escapeHtml(optionLabel(periodOptions, state.filterPeriod))}
+        ${filterButton(
+          "period",
+          labelOf(periodOptions, state.filterPeriod)
+        )}
+
+        ${filterButton(
+          "condition",
+          labelOf(conditionOptions, state.filterCondition)
+        )}
+
+        <button class="filter-button" type="button" data-action="season">
+          ${escapeHtml(seasonLabel())}
         </button>
       </div>
 
       <div class="section-header">
-        <h3>Все задания</h3>
-        <span class="date-label">${filtered.length}</span>
+        <h3>Подходящие задания</h3>
+        <span class="date-label">${list.length}</span>
       </div>
 
-      <div class="article-list">
+      <div class="card-list">
         ${
-          filtered.length
-            ? filtered.map(taskCard).join("")
-            : `
-              <div class="empty-state">
-                Для этих условий пока нет задания.<br />
-                Измените один из фильтров.
-              </div>
-            `
+          list.length
+            ? list.map(taskCard).join("")
+            : `<div class="empty-state">
+                Для выбранных условий пока нет задания.
+              </div>`
         }
       </div>
     </section>
   `;
 }
 
-function filteredTasks() {
-  return tasks.filter((task) => {
-    const placeMatches =
-      state.filterPlace === "все" ||
-      task.place === state.filterPlace ||
-      task.place === "где угодно";
-
-    const periodMatches =
-      state.filterPeriod === "все" ||
-      task.period.includes(state.filterPeriod) ||
-      task.period === "любое время";
-
-    return placeMatches && periodMatches;
-  });
+function filterButton(type, label) {
+  return `
+    <button
+      class="filter-button"
+      type="button"
+      data-action="filter-${escapeHtml(type)}"
+    >
+      ${escapeHtml(label)}
+    </button>
+  `;
 }
 
-function taskCardDetailed(task) {
+function detailedTask(task) {
   return `
     <article class="task-card">
-      <div class="task-topline">
-        <span class="task-category">
-          ${escapeHtml(task.technique)}
+      <div class="card-top">
+        <span class="category-label">
+          ${escapeHtml(task.category)}
         </span>
 
         ${
           isCompleted(task.id)
-            ? '<span class="tag">Выполнено</span>'
+            ? `<span class="tag">Выполнено</span>`
             : ""
         }
       </div>
 
       <h2>${escapeHtml(task.title)}</h2>
+      <p class="task-description">${escapeHtml(task.description)}</p>
 
-      <p class="task-description">
-        ${escapeHtml(task.description)}
-      </p>
-
-      <div class="task-compact-meta">
-        <span>${escapeHtml(task.place)}</span>
-        <span>${escapeHtml(formatLevel(task.level))}</span>
-        <span>${escapeHtml(task.season)}</span>
+      <div class="task-meta">
+        <span class="tag">${escapeHtml(task.place)}</span>
+        <span class="tag">${escapeHtml(task.period)}</span>
+        <span class="tag">${escapeHtml(seasonText(task.seasons))}</span>
       </div>
 
-      ${taskVisual(task.visual)}
+      <div class="task-visual">
+        <div class="visual-object"></div>
+        <div class="visual-pot"></div>
+        <div class="visual-phone"></div>
+        <div class="visual-label">
+          Меняйте положение смартфона и сравнивайте результат
+        </div>
+      </div>
 
-      <div class="motivation-card">
+      <div class="motivation">
         ✦ ${escapeHtml(task.motivation)}
       </div>
 
       <section class="detail-section">
         <h3>Цель</h3>
-        <div class="notice">
-          ${escapeHtml(task.goal)}
-        </div>
+        <div class="notice">${escapeHtml(task.goal)}</div>
       </section>
 
       <section class="detail-section">
         <h3>Что подготовить</h3>
         <ul>
           ${task.preparation
-            .map(
-              (item) => `
-                <li>${escapeHtml(item)}</li>
-              `
-            )
+            .map((item) => `<li>${escapeHtml(item)}</li>`)
             .join("")}
         </ul>
       </section>
@@ -1583,48 +953,23 @@ function taskCardDetailed(task) {
         <h3>Пошагово</h3>
         <ol>
           ${task.steps
-            .map(
-              (step) => `
-                <li>${escapeHtml(step)}</li>
-              `
-            )
+            .map((item) => `<li>${escapeHtml(item)}</li>`)
             .join("")}
         </ol>
-      </section>
-
-      <section class="detail-section">
-        <h3>Варианты</h3>
-
-        ${task.versions
-          .map(
-            (version) => `
-              <div class="version-card">
-                <h4>${escapeHtml(version.title)}</h4>
-                <p>${escapeHtml(version.text)}</p>
-              </div>
-            `
-          )
-          .join("")}
       </section>
 
       <section class="detail-section">
         <h3>Типичные ошибки</h3>
         <ul>
           ${task.mistakes
-            .map(
-              (mistake) => `
-                <li>${escapeHtml(mistake)}</li>
-              `
-            )
+            .map((item) => `<li>${escapeHtml(item)}</li>`)
             .join("")}
         </ul>
       </section>
 
       <section class="detail-section">
         <h3>Если условия не подходят</h3>
-        <div class="notice">
-          ${escapeHtml(task.alternatives)}
-        </div>
+        <div class="notice">${escapeHtml(task.alternative)}</div>
       </section>
 
       <section class="detail-section">
@@ -1633,22 +978,18 @@ function taskCardDetailed(task) {
       </section>
 
       <div class="task-actions">
-        <button
-          class="primary-button"
-          type="button"
-          data-action="random-task"
-        >
+        <button class="primary-button" type="button" data-action="random">
           Другое задание
         </button>
 
         <button
           class="secondary-button"
           type="button"
-          data-action="complete-task"
+          data-action="complete"
         >
           ${
             isCompleted(task.id)
-              ? "Уже выполнено"
+              ? "Убрать отметку"
               : "Отметить выполненным"
           }
         </button>
@@ -1657,221 +998,82 @@ function taskCardDetailed(task) {
   `;
 }
 
+function seasonText(seasons) {
+  return seasons.includes("все")
+    ? "любой сезон"
+    : seasons.join(", ");
+}
+
 function taskCard(task) {
   return `
     <button
-      class="article-card"
+      class="card"
       type="button"
       data-task="${escapeHtml(task.id)}"
     >
-      <div class="article-topline">
-        <span class="article-category">
-          ${escapeHtml(task.technique)}
+      <div class="card-top">
+        <span class="category-label">
+          ${escapeHtml(task.category)}
         </span>
-
-        ${
-          isCompleted(task.id)
-            ? '<span class="tag">Выполнено</span>'
-            : ""
-        }
+        ${isCompleted(task.id) ? `<span class="tag">Выполнено</span>` : ""}
       </div>
 
       <h3>${escapeHtml(task.title)}</h3>
       <p>${escapeHtml(task.description)}</p>
 
-      <div class="tag-row">
+      <div class="tags">
         <span class="tag">${escapeHtml(task.place)}</span>
-        <span class="tag">${escapeHtml(formatLevel(task.level))}</span>
+        <span class="tag">${escapeHtml(seasonText(task.seasons))}</span>
       </div>
     </button>
   `;
 }
 
-function taskVisual(type) {
-  if (type === "light") {
-    return `
-      <div
-        class="task-visual visual-light"
-        aria-label="Схема бокового света из окна"
-      >
-        <div class="visual-window"></div>
-        <div class="visual-light-ray ray-one"></div>
-        <div class="visual-light-ray ray-two"></div>
-        <div class="visual-light-ray ray-three"></div>
-        <div class="visual-object"></div>
-        <div class="visual-pot"></div>
-
-        <div class="visual-label">
-          Меняйте положение предмета относительно окна
-        </div>
-      </div>
-    `;
-  }
-
-  if (type === "low") {
-    return `
-      <div
-        class="task-visual visual-low"
-        aria-label="Смартфон расположен возле земли"
-      >
-        <div class="visual-ground"></div>
-        <div class="visual-phone"></div>
-        <div class="visual-low-object"></div>
-
-        <div class="visual-label">
-          Опустите объектив почти до уровня поверхности
-        </div>
-      </div>
-    `;
-  }
-
-  if (type === "shadow") {
-    return `
-      <div
-        class="task-visual visual-shadow"
-        aria-label="Свет создаёт длинную тень"
-      >
-        <div class="visual-shadow-source"></div>
-        <div class="visual-shadow-person"></div>
-        <div class="visual-shadow-shape"></div>
-
-        <div class="visual-label">
-          Снимайте не предмет, а созданную им форму
-        </div>
-      </div>
-    `;
-  }
-
-  if (type === "frames") {
-    return `
-      <div
-        class="task-visual"
-        aria-label="Пять разных кадров"
-      >
-        <div class="visual-frames">
-          <div class="visual-frame">1</div>
-          <div class="visual-frame">2</div>
-          <div class="visual-frame">3</div>
-          <div class="visual-frame">4</div>
-          <div class="visual-frame">5</div>
-        </div>
-
-        <div class="visual-label">
-          Каждый следующий кадр должен отличаться
-        </div>
-      </div>
-    `;
-  }
-
-  return `
-    <div
-      class="task-visual visual-orbit"
-      aria-label="Смартфон движется вокруг предмета"
-    >
-      <div class="visual-path"></div>
-      <div class="visual-object"></div>
-      <div class="visual-pot"></div>
-      <div class="visual-phone"></div>
-
-      <div class="visual-label">
-        Двигайте смартфон вокруг неподвижного объекта
-      </div>
-    </div>
-  `;
-}
-
-function randomTask(mode = "all") {
-  let available = recommendedTasks();
+function randomTask(mode = "normal") {
+  let source = recommendedTasks();
 
   if (mode === "home") {
-    available = tasks.filter(
-      (task) =>
-        task.place === "дом" ||
-        task.place === "где угодно"
+    source = tasks.filter(
+      (task) => task.place === "дом" || task.place === "где угодно"
     );
   }
 
   if (mode === "crisis") {
-    available = tasks.filter(
+    source = tasks.filter(
       (task) =>
-        task.audiences.includes("Возвращаю вдохновение") ||
-        task.id === "task-five"
+        task.category === "Кризис" ||
+        task.id === "five-frames" ||
+        task.id === "archive-theme"
     );
   }
 
-  if (mode === "all" && state.filterPlace !== "все") {
-    available = available.filter(
-      (task) =>
-        task.place === state.filterPlace ||
-        task.place === "где угодно"
-    );
-  }
+  source = source.filter((task) => task.id !== currentTask().id);
 
-  if (mode === "all" && state.filterPeriod !== "все") {
-    available = available.filter(
-      (task) =>
-        task.period.includes(state.filterPeriod) ||
-        task.period === "любое время"
-    );
-  }
+  if (!source.length) source = tasks;
 
-  if (!available.length) {
-    available = tasks;
-  }
-
-  const current = currentTask();
-  const alternatives = available.filter(
-    (task) => task.id !== current.id
-  );
-
-  const pool = alternatives.length ? alternatives : available;
-
-  const selected =
-    pool[Math.floor(Math.random() * pool.length)];
-
+  const selected = source[Math.floor(Math.random() * source.length)];
   openTask(selected.id);
 }
 
-function completeTask(taskId) {
-  if (isCompleted(taskId)) {
+function toggleComplete(id) {
+  if (isCompleted(id)) {
     state.completedTasks = state.completedTasks.filter(
-      (id) => id !== taskId
+      (item) => item !== id
     );
-
-    saveState();
-    renderShoot();
-    showToast("Отметка о выполнении удалена");
-    return;
+    showToast("Отметка удалена");
+  } else {
+    state.completedTasks.push(id);
+    showToast("Практика сохранена");
   }
 
-  state.completedTasks.push(taskId);
   saveState();
   renderShoot();
-  showToast("Вы попробовали новый способ смотреть");
 }
 
-/* -------------------------------------------------------------------------- */
-/* Коллекция                                                                  */
-/* -------------------------------------------------------------------------- */
-
-function toggleFavorite(articleId) {
-  if (isFavorite(articleId)) {
-    state.favorites = state.favorites.filter(
-      (id) => id !== articleId
-    );
-
-    showToast("Материал удалён из коллекции");
-  } else {
-    state.favorites.push(articleId);
-    showToast("Материал сохранён");
-  }
-
-  saveState();
-  renderArticle(articleId);
-}
+/* Коллекция */
 
 function renderCollection() {
-  const favorites = articles.filter((article) =>
+  const favoriteArticles = articles.filter((article) =>
     state.favorites.includes(article.id)
   );
 
@@ -1883,52 +1085,41 @@ function renderCollection() {
     <section class="screen">
       <div class="screen-heading">
         <h2>Коллекция</h2>
-        <p>
-          Сохранённые материалы и пройденные практики.
-        </p>
+        <p>Сохранённые знания и выполненные практики.</p>
       </div>
 
       <div class="section-header">
-        <h3>Сохранённые материалы</h3>
-        <span class="date-label">${favorites.length}</span>
+        <h3>Материалы</h3>
+        <span class="date-label">${favoriteArticles.length}</span>
       </div>
 
       ${
-        favorites.length
-          ? `
-            <div class="article-list">
-              ${favorites.map(articleCard).join("")}
-            </div>
-          `
-          : `
-            <div class="empty-state">
-              Здесь пока пусто.<br />
-              Сохраняйте техники, которые хочется попробовать.
-            </div>
-          `
+        favoriteArticles.length
+          ? `<div class="card-list">
+              ${favoriteArticles.map(articleCard).join("")}
+            </div>`
+          : `<div class="empty-state">
+              Сохранённые статьи появятся здесь.
+            </div>`
       }
 
       <div class="section-header">
-        <h3>Выполненные задания</h3>
+        <h3>Практика</h3>
         <span class="date-label">${completed.length}</span>
       </div>
 
       ${
         completed.length
-          ? `
-            <div class="article-list">
+          ? `<div class="card-list">
               ${completed.map(taskCard).join("")}
-            </div>
-          `
-          : `
-            <div class="empty-state">
-              Выполненные практики появятся здесь.
-            </div>
-          `
+            </div>`
+          : `<div class="empty-state">
+              Выполненные задания появятся здесь.
+            </div>`
       }
 
       <div class="section-header">
-        <h3>Управление коллекцией</h3>
+        <h3>Очистка</h3>
       </div>
 
       <div class="danger-zone">
@@ -1945,7 +1136,7 @@ function renderCollection() {
           class="danger-button"
           type="button"
           data-action="clear-favorites"
-          ${favorites.length ? "" : "disabled"}
+          ${favoriteArticles.length ? "" : "disabled"}
         >
           Очистить сохранённые материалы
         </button>
@@ -1954,61 +1145,44 @@ function renderCollection() {
   `;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Профиль                                                                    */
-/* -------------------------------------------------------------------------- */
+/* Профиль */
 
 function renderProfile() {
   app.innerHTML = `
     <section class="screen">
       <div class="screen-heading">
         <h2>Профиль</h2>
-        <p>
-          Настройте рекомендации и внешний вид приложения.
-        </p>
+        <p>Настройте рекомендации и чтение под себя.</p>
       </div>
 
       <div class="profile-card">
-        <div class="profile-row">
-          <div class="profile-copy">
-            <strong>Уровень и цель</strong>
-            <small>
-              Влияет на задания дня и случайные рекомендации
-            </small>
-          </div>
+        ${profileChoice(
+          "Уровень и цель",
+          "Влияет на рекомендации",
+          "level",
+          state.level
+        )}
 
-          <button
-            class="setting-button"
-            type="button"
-            data-action="choose-level"
-          >
-            ${escapeHtml(state.level)}
-          </button>
-        </div>
+        ${profileChoice(
+          "Размер текста",
+          "Размер инструкций и описаний",
+          "font",
+          labelOf(fontSizes, state.fontSize)
+        )}
 
-        <div class="profile-row">
-          <div class="profile-copy">
-            <strong>Размер текста</strong>
-            <small>
-              Отдельная настройка для чтения инструкций
-            </small>
-          </div>
-
-          <button
-            class="setting-button"
-            type="button"
-            data-action="choose-font"
-          >
-            ${escapeHtml(fontLabel(state.fontSize))}
-          </button>
-        </div>
+        ${profileChoice(
+          "Сезон",
+          "Влияет на задания дня",
+          "season",
+          state.season === "auto"
+            ? `Авто: ${seasonLabel()}`
+            : seasonLabel()
+        )}
 
         <div class="profile-row">
           <div class="profile-copy">
             <strong>Заданий на сегодня</strong>
-            <small>
-              Сколько рекомендаций показывать на главной
-            </small>
+            <small>Количество карточек на главной</small>
           </div>
 
           <div class="count-selector">
@@ -2020,8 +1194,7 @@ function renderProfile() {
                       state.dailyCount === count ? "active" : ""
                     }"
                     type="button"
-                    data-daily-count="${count}"
-                    aria-label="${count} заданий на сегодня"
+                    data-count="${count}"
                   >
                     ${count}
                   </button>
@@ -2034,54 +1207,28 @@ function renderProfile() {
         <div class="profile-row">
           <div class="profile-copy">
             <strong>Тёмная тема</strong>
-            <small>
-              Тёплый интерфейс для вечернего использования
-            </small>
+            <small>Тёплый интерфейс для вечера</small>
           </div>
 
           <button
-            class="toggle ${
-              state.theme === "dark" ? "active" : ""
-            }"
-            id="profileThemeToggle"
+            class="toggle ${state.theme === "dark" ? "active" : ""}"
             type="button"
+            data-action="toggle-theme"
             aria-label="Переключить тему"
           ></button>
         </div>
 
         <div class="profile-row">
           <div class="profile-copy">
-            <strong>Выполнено заданий</strong>
-            <small>Личная практика без рейтингов</small>
+            <strong>Выполнено</strong>
+            <small>Без рейтингов и обязательной серии</small>
           </div>
-
           <strong>${state.completedTasks.length}</strong>
-        </div>
-
-        <div class="profile-row">
-          <div class="profile-copy">
-            <strong>Сохранено материалов</strong>
-            <small>Статьи для повторного изучения</small>
-          </div>
-
-          <strong>${state.favorites.length}</strong>
-        </div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-card-icon">i</div>
-
-        <div>
-          <h3>Как работает уровень</h3>
-          <p>
-            Уровень меняет задания дня и случайные рекомендации.
-            Полная библиотека при этом остаётся доступной.
-          </p>
         </div>
       </div>
 
       <div class="section-header">
-        <h3>Данные приложения</h3>
+        <h3>Данные</h3>
       </div>
 
       <div class="danger-zone">
@@ -2098,62 +1245,49 @@ function renderProfile() {
           type="button"
           data-action="clear-favorites"
         >
-          Очистить сохранённые материалы
+          Очистить избранное
         </button>
       </div>
     </section>
   `;
-
-  document
-    .querySelector("#profileThemeToggle")
-    ?.addEventListener("click", () => {
-      state.theme =
-        state.theme === "dark" ? "light" : "dark";
-
-      saveState();
-      applyPreferences();
-      renderProfile();
-    });
 }
 
-/* -------------------------------------------------------------------------- */
-/* Нижнее окно выбора                                                        */
-/* -------------------------------------------------------------------------- */
+function profileChoice(title, subtitle, action, value) {
+  return `
+    <div class="profile-row">
+      <div class="profile-copy">
+        <strong>${escapeHtml(title)}</strong>
+        <small>${escapeHtml(subtitle)}</small>
+      </div>
 
-function openChoiceSheet({
-  title,
-  options,
-  currentValue,
-  onSelect
-}) {
+      <button
+        class="setting-button"
+        type="button"
+        data-action="choose-${escapeHtml(action)}"
+      >
+        ${escapeHtml(value)}
+      </button>
+    </div>
+  `;
+}
+
+/* Bottom sheet */
+
+function openSheet(title, options, current, callback) {
   sheetTitle.textContent = title;
 
   sheetContent.innerHTML = options
     .map(
-      (option) => `
+      (item) => `
         <button
-          class="sheet-option ${
-            option.value === currentValue ? "active" : ""
-          }"
+          class="sheet-option ${item[0] === current ? "active" : ""}"
           type="button"
-          data-sheet-value="${escapeHtml(option.value)}"
+          data-sheet-value="${escapeHtml(item[0])}"
         >
           <span>
-            <strong>
-              ${escapeHtml(option.label || option.value)}
-            </strong>
-
-            ${
-              option.description
-                ? `
-                  <small>
-                    ${escapeHtml(option.description)}
-                  </small>
-                `
-                : ""
-            }
+            <strong>${escapeHtml(item[1])}</strong>
+            ${item[2] ? `<small>${escapeHtml(item[2])}</small>` : ""}
           </span>
-
           <span class="sheet-check">✓</span>
         </button>
       `
@@ -2161,98 +1295,44 @@ function openChoiceSheet({
     .join("");
 
   sheetBackdrop.classList.remove("hidden");
-  sheetBackdrop.setAttribute("aria-hidden", "false");
   document.body.classList.add("sheet-open");
 
   sheetContent.onclick = (event) => {
-    const option = event.target.closest("[data-sheet-value]");
+    const button = event.target.closest("[data-sheet-value]");
 
-    if (!option) {
-      return;
-    }
+    if (!button) return;
 
-    onSelect(option.dataset.sheetValue);
-    closeChoiceSheet();
+    callback(button.dataset.sheetValue);
+    closeSheet();
   };
 }
 
-function closeChoiceSheet() {
+function closeSheet() {
   sheetBackdrop.classList.add("hidden");
-  sheetBackdrop.setAttribute("aria-hidden", "true");
   document.body.classList.remove("sheet-open");
   sheetContent.onclick = null;
 }
 
-sheetClose.addEventListener("click", closeChoiceSheet);
+sheetClose.addEventListener("click", closeSheet);
 
 sheetBackdrop.addEventListener("click", (event) => {
-  if (event.target === sheetBackdrop) {
-    closeChoiceSheet();
-  }
+  if (event.target === sheetBackdrop) closeSheet();
 });
 
-document.addEventListener("keydown", (event) => {
-  if (
-    event.key === "Escape" &&
-    !sheetBackdrop.classList.contains("hidden")
-  ) {
-    closeChoiceSheet();
-  }
-});
-
-/* -------------------------------------------------------------------------- */
-/* Очистка данных                                                             */
-/* -------------------------------------------------------------------------- */
-
-function clearCompleted() {
-  if (!state.completedTasks.length) {
-    showToast("Список выполненных заданий уже пуст");
-    return;
-  }
-
-  const confirmed = window.confirm(
-    "Удалить все отметки о выполненных заданиях?"
-  );
-
-  if (!confirmed) {
-    return;
-  }
-
-  state.completedTasks = [];
-  saveState();
-  render();
-  showToast("Выполненные задания очищены");
-}
-
-function clearFavorites() {
-  if (!state.favorites.length) {
-    showToast("Сохранённых материалов пока нет");
-    return;
-  }
-
-  const confirmed = window.confirm(
-    "Удалить все сохранённые материалы?"
-  );
-
-  if (!confirmed) {
-    return;
-  }
-
-  state.favorites = [];
-  saveState();
-  render();
-  showToast("Сохранённые материалы очищены");
-}
-
-/* -------------------------------------------------------------------------- */
-/* Обработчики                                                                */
-/* -------------------------------------------------------------------------- */
+/* Обработчики */
 
 document.addEventListener("click", (event) => {
-  const navigationButton = event.target.closest("[data-screen]");
+  const navigation = event.target.closest("[data-screen]");
 
-  if (navigationButton) {
-    setScreen(navigationButton.dataset.screen);
+  if (navigation) {
+    setScreen(navigation.dataset.screen);
+    return;
+  }
+
+  const taskButton = event.target.closest("[data-task]");
+
+  if (taskButton) {
+    openTask(taskButton.dataset.task);
     return;
   }
 
@@ -2263,10 +1343,22 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  const taskButton = event.target.closest("[data-task]");
+  const crisisButton = event.target.closest("[data-crisis]");
 
-  if (taskButton) {
-    openTask(taskButton.dataset.task);
+  if (crisisButton) {
+    state.selectedCrisisId = crisisButton.dataset.crisis;
+    saveState();
+    renderInspiration();
+    return;
+  }
+
+  const catalogButton = event.target.closest("[data-catalog]");
+
+  if (catalogButton) {
+    state.learnCategory = catalogButton.dataset.catalog;
+    state.learnQuery = "";
+    saveState();
+    renderLearn();
     return;
   }
 
@@ -2279,151 +1371,196 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  const countButton = event.target.closest("[data-daily-count]");
+  const countButton = event.target.closest("[data-count]");
 
   if (countButton) {
-    state.dailyCount = Number(countButton.dataset.dailyCount);
+    state.dailyCount = Number(countButton.dataset.count);
     saveState();
     renderProfile();
-    showToast("Количество заданий изменено");
     return;
   }
 
   const actionButton = event.target.closest("[data-action]");
 
-  if (!actionButton) {
-    return;
-  }
+  if (!actionButton) return;
 
   const action = actionButton.dataset.action;
 
-  if (action === "open-main-daily") {
-    openTask(mainDailyTask().id);
+  if (action === "open-main-task") openTask(mainDailyTask().id);
+  if (action === "change-daily") changeDailyTask();
+  if (action === "open-all-tasks") setScreen("shoot");
+  if (action === "random") randomTask();
+  if (action === "home") randomTask("home");
+  if (action === "crisis-task") randomTask("crisis");
+
+  if (action === "learn") {
+    state.learnMode = "catalog";
+    state.screen = "learn";
+    saveState();
+    render();
+    scrollTop();
   }
 
-  if (action === "change-main-daily") {
-    changeDailyTask(0);
-  }
-
-  if (action === "open-shoot") {
-    setScreen("shoot");
-  }
-
-  if (action === "open-learn") {
-    setScreen("learn");
+  if (action === "inspiration") {
+    state.screen = "learn";
+    state.learnMode = "inspiration";
+    state.selectedCrisisId = null;
+    saveState();
+    render();
+    scrollTop();
   }
 
   if (action === "back-learn") {
-    setScreen("learn");
+    state.learnMode = "catalog";
+    state.selectedCrisisId = null;
+    state.screen = "learn";
+    saveState();
+    render();
+    scrollTop();
   }
 
-  if (action === "random-task") {
-    randomTask("all");
+  if (action === "crisis-list") {
+    state.selectedCrisisId = null;
+    saveState();
+    renderInspiration();
   }
 
-  if (action === "home-task") {
-    randomTask("home");
+  if (action === "favorite") {
+    const id = actionButton.dataset.id;
+
+    state.favorites = isFavorite(id)
+      ? state.favorites.filter((item) => item !== id)
+      : [...state.favorites, id];
+
+    saveState();
+    renderArticle(id);
+    showToast(isFavorite(id) ? "Сохранено" : "Удалено из коллекции");
   }
 
-  if (action === "crisis-task") {
-    randomTask("crisis");
+  if (action === "complete") {
+    toggleComplete(currentTask().id);
   }
 
-  if (action === "complete-task") {
-    completeTask(currentTask().id);
-  }
-
-  if (action === "toggle-article-favorite") {
-    toggleFavorite(actionButton.dataset.id);
-  }
-
-  if (action === "clear-completed") {
-    clearCompleted();
-  }
-
-  if (action === "clear-favorites") {
-    clearFavorites();
+  if (action === "toggle-theme") {
+    state.theme = state.theme === "dark" ? "light" : "dark";
+    saveState();
+    applyPreferences();
+    renderProfile();
   }
 
   if (action === "choose-level") {
-    openChoiceSheet({
-      title: "Уровень и цель",
-      options: levels.map((item) => ({
-        value: item.value,
-        label: item.value,
-        description: item.description
-      })),
-      currentValue: state.level,
-      onSelect(value) {
+    openSheet(
+      "Уровень и цель",
+      levels.map(([value, description]) => [
+        value,
+        value,
+        description
+      ]),
+      state.level,
+      (value) => {
         state.level = value;
-
-        /*
-         * Сбрасываем набор текущего дня, чтобы влияние нового уровня
-         * было заметно сразу.
-         */
-        delete state.dailyOverrides[localDateKey()];
-
+        delete state.dailyOverrides[dateKey()];
         saveState();
         renderProfile();
         showToast("Рекомендации обновлены");
       }
-    });
+    );
   }
 
   if (action === "choose-font") {
-    openChoiceSheet({
-      title: "Размер текста",
-      options: fontSizes,
-      currentValue: state.fontSize,
-      onSelect(value) {
+    openSheet(
+      "Размер текста",
+      fontSizes,
+      state.fontSize,
+      (value) => {
         state.fontSize = value;
         saveState();
         applyPreferences();
         renderProfile();
-        showToast("Размер текста изменён");
       }
+    );
+  }
+
+  if (action === "choose-season" || action === "season") {
+    openSheet(
+      "Сезон",
+      seasonOptions,
+      state.season,
+      (value) => {
+        state.season = value;
+        delete state.dailyOverrides[dateKey()];
+        saveState();
+
+        if (state.screen === "shoot") renderShoot();
+        else renderProfile();
+
+        showToast("Сезонные рекомендации обновлены");
+      }
+    );
+  }
+
+  if (action === "filter-place") {
+    openSheet("Место", placeOptions, state.filterPlace, (value) => {
+      state.filterPlace = value;
+      saveState();
+      renderShoot();
     });
   }
 
-  if (action === "choose-place") {
-    openChoiceSheet({
-      title: "Где снимать",
-      options: placeOptions,
-      currentValue: state.filterPlace,
-      onSelect(value) {
-        state.filterPlace = value;
-        saveState();
-        renderShoot();
-      }
+  if (action === "filter-period") {
+    openSheet("Время суток", periodOptions, state.filterPeriod, (value) => {
+      state.filterPeriod = value;
+      saveState();
+      renderShoot();
     });
   }
 
-  if (action === "choose-period") {
-    openChoiceSheet({
-      title: "Когда снимать",
-      options: periodOptions,
-      currentValue: state.filterPeriod,
-      onSelect(value) {
-        state.filterPeriod = value;
+  if (action === "filter-condition") {
+    openSheet(
+      "Условия",
+      conditionOptions,
+      state.filterCondition,
+      (value) => {
+        state.filterCondition = value;
         saveState();
         renderShoot();
       }
-    });
+    );
+  }
+
+  if (action === "clear-completed") {
+    if (
+      state.completedTasks.length &&
+      confirm("Удалить все отметки о выполнении?")
+    ) {
+      state.completedTasks = [];
+      saveState();
+      render();
+      showToast("Выполненные задания очищены");
+    }
+  }
+
+  if (action === "clear-favorites") {
+    if (
+      state.favorites.length &&
+      confirm("Удалить все сохранённые материалы?")
+    ) {
+      state.favorites = [];
+      saveState();
+      render();
+      showToast("Избранное очищено");
+    }
   }
 });
 
 themeToggle.addEventListener("click", () => {
-  state.theme =
-    state.theme === "dark" ? "light" : "dark";
-
+  state.theme = state.theme === "dark" ? "light" : "dark";
   saveState();
   applyPreferences();
   render();
 });
 
-/* -------------------------------------------------------------------------- */
-/* Установка PWA                                                              */
-/* -------------------------------------------------------------------------- */
+/* PWA */
 
 window.addEventListener("beforeinstallprompt", (event) => {
   event.preventDefault();
@@ -2433,34 +1570,21 @@ window.addEventListener("beforeinstallprompt", (event) => {
 
 installButton.addEventListener("click", async () => {
   if (!deferredInstallPrompt) {
-    showToast(
-      "Откройте меню браузера и выберите установку приложения"
-    );
-
+    showToast("Используйте пункт установки в меню браузера");
     return;
   }
 
   deferredInstallPrompt.prompt();
-
-  const result = await deferredInstallPrompt.userChoice;
-
-  if (result.outcome === "accepted") {
-    showToast("Приложение устанавливается");
-  }
+  await deferredInstallPrompt.userChoice;
 
   deferredInstallPrompt = null;
   installButton.classList.add("hidden");
 });
 
 window.addEventListener("appinstalled", () => {
-  deferredInstallPrompt = null;
   installButton.classList.add("hidden");
   showToast("«Вне кадра» установлено");
 });
-
-/* -------------------------------------------------------------------------- */
-/* Service Worker                                                             */
-/* -------------------------------------------------------------------------- */
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
@@ -2470,29 +1594,10 @@ if ("serviceWorker" in navigator) {
 
       registration.update();
     } catch (error) {
-      console.warn(
-        "Не удалось зарегистрировать Service Worker:",
-        error
-      );
+      console.warn("Service Worker:", error);
     }
   });
-
-  navigator.serviceWorker.addEventListener(
-    "controllerchange",
-    () => {
-      if (sessionStorage.getItem("vne-kadra-reloaded")) {
-        return;
-      }
-
-      sessionStorage.setItem("vne-kadra-reloaded", "true");
-      window.location.reload();
-    }
-  );
 }
-
-/* -------------------------------------------------------------------------- */
-/* Запуск                                                                     */
-/* -------------------------------------------------------------------------- */
 
 applyPreferences();
 render();

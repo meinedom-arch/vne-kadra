@@ -1,9 +1,10 @@
-const CACHE_NAME = "vne-kadra-v5";
+const CACHE_NAME = "vne-kadra-v6";
 
 const CORE_FILES = [
   "./",
   "./index.html",
   "./styles.css",
+  "./data.js",
   "./app.js",
   "./manifest.json"
 ];
@@ -29,9 +30,9 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) =>
+    caches.keys().then((names) =>
       Promise.all(
-        cacheNames
+        names
           .filter((name) => name !== CACHE_NAME)
           .map((name) => caches.delete(name))
       )
@@ -48,10 +49,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  /*
-   * Для переходов между страницами сначала пробуем сеть,
-   * чтобы пользователь быстрее получал новую версию приложения.
-   */
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
@@ -75,13 +72,9 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  /*
-   * Для CSS, JavaScript и изображений возвращаем кэш сразу,
-   * но параллельно обновляем его из сети.
-   */
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      const networkResponse = fetch(request)
+    caches.match(request).then((cached) => {
+      const network = fetch(request)
         .then((response) => {
           if (
             response &&
@@ -97,9 +90,9 @@ self.addEventListener("fetch", (event) => {
 
           return response;
         })
-        .catch(() => cachedResponse);
+        .catch(() => cached);
 
-      return cachedResponse || networkResponse;
+      return cached || network;
     })
   );
 });
