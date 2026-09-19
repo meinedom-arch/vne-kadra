@@ -1,4 +1,5 @@
 {
+  "id": "./",
   "name": "Вне кадра — мобильная фотография",
   "short_name": "Вне кадра",
   "description": "Энциклопедия, задания и идеи для мобильного фотографа.",
@@ -6,9 +7,19 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
   "background_color": "#11100f",
   "theme_color": "#11100f",
+  "categories": [
+    "photography",
+    "education",
+    "lifestyle"
+  ],
   "icons": [
     {
       "src": "./icon-192.png",
