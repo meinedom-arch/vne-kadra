@@ -15,6 +15,7 @@ const {
   homeAlternatives,
   seasonalTasks,
   weeklyProjects,
+  weekPlans,
   monthlyProjects,
   categories
 } = VK_DATA;
@@ -77,7 +78,13 @@ const defaultState = {
    * Общая история недавно показанных заданий.
    * Используется для уменьшения количества повторов.
    */
-  recentTaskIds: []
+  recentTaskIds: [],
+
+  /*
+   * Активный недельный план пользователя.
+   * null означает, что план пока не запущен.
+   */
+  weekPlan: null
 };
 
 const levels = [
@@ -358,6 +365,20 @@ function normalizeState(input) {
   normalized.dailyCount = Number.isFinite(count)
     ? Math.min(5, Math.max(1, count))
     : 5;
+
+  if (
+    normalized.weekPlan &&
+    typeof normalized.weekPlan !== "object"
+  ) {
+    normalized.weekPlan = null;
+  }
+
+  if (
+    normalized.weekPlan &&
+    !Array.isArray(normalized.weekPlan.days)
+  ) {
+    normalized.weekPlan = null;
+  }
 
   return normalized;
 }
@@ -1313,7 +1334,7 @@ function renderToday(animate = false) {
             : ""
         }
       </div>
-
+      ${renderWeekPreview()}
       <div class="section-header">
         <h3>Быстрый выбор</h3>
 
@@ -1840,7 +1861,79 @@ function renderTaskVisual(
     </div>
   `;
 }
+function renderWeekPreview() {
+  const active = state.weekPlan;
 
+  if (!active) {
+    return `
+      <section class="week-preview">
+        <div class="week-preview-copy">
+          <span class="week-preview-kicker">
+            МОЯ НЕДЕЛЯ
+          </span>
+
+          <h3>Практика без гонки</h3>
+
+          <p>
+            Выберите спокойный семидневный план:
+            свет, ракурсы, фактуры, истории
+            или мягкое возвращение к фотографии.
+          </p>
+        </div>
+
+        <button
+          class="secondary-button"
+          type="button"
+          data-action="open-week"
+        >
+          Выбрать план
+        </button>
+      </section>
+    `;
+  }
+
+  const plan = weekPlans.find(
+    (item) => item.id === active.planId
+  );
+
+  const completed = active.days.filter(
+    (day) => day.status === "completed"
+  ).length;
+
+  const currentDay = getActiveWeekDay();
+
+  return `
+    <section class="week-preview week-preview-active">
+      <div class="week-preview-copy">
+        <span class="week-preview-kicker">
+          МОЯ НЕДЕЛЯ · ${completed} из 7
+        </span>
+
+        <h3>
+          ${escapeHtml(
+            plan?.title || "Активный план"
+          )}
+        </h3>
+
+        <p>
+          ${
+            currentDay
+              ? `Сейчас: ${escapeHtml(currentDay.title)}`
+              : "План завершён. Можно посмотреть итоги."
+          }
+        </p>
+      </div>
+
+      <button
+        class="secondary-button"
+        type="button"
+        data-action="open-week"
+      >
+        Открыть
+      </button>
+    </section>
+  `;
+}
 /*
  * ============================================================================
  * Энциклопедия
@@ -3019,13 +3112,24 @@ function toggleTaskCompleted(taskId) {
     taskId
   ]);
 
+  const completedWeekDay =
+    completeWeekDayForTask(taskId);
+
   const replaced =
     replaceCompletedInDailyPool(taskId);
 
   saveState();
   renderShoot();
 
-  if (replaced) {
+  if (completedWeekDay && replaced) {
+    showToast(
+      "Задание выполнено. Неделя продолжится со следующим днём"
+    );
+  } else if (completedWeekDay) {
+    showToast(
+      "Задание отмечено в недельном плане"
+    );
+  } else if (replaced) {
     showToast(
       "Выполнено. На главной появилось новое задание"
     );
@@ -3035,7 +3139,726 @@ function toggleTaskCompleted(taskId) {
     );
   }
 }
+/*
+ * ============================================================================
+ * Моя неделя
+ * ============================================================================
+ */
 
+function getWeekCompletedCount() {
+  if (!state.weekPlan) {
+    return 0;
+  }
+
+  return state.weekPlan.days.filter(
+    (day) => day.status === "completed"
+  ).length;
+}
+
+function getActiveWeekDay() {
+  if (!state.weekPlan) {
+    return null;
+  }
+
+  return (
+    state.weekPlan.days.find(
+      (day) => day.status === "active"
+    ) ||
+    state.weekPlan.days.find(
+      (day) => day.status === "planned"
+    ) ||
+    null
+  );
+}
+
+function getWeekDayIndex(dayId) {
+  if (!state.weekPlan) {
+    return -1;
+  }
+
+  return state.weekPlan.days.findIndex(
+    (day) => day.id === dayId
+  );
+}
+
+function taskForWeekDay(day) {
+  if (!day) {
+    return null;
+  }
+
+  return taskById(day.taskId);
+}
+
+function startWeekPlan(planId) {
+  const plan = weekPlans.find(
+    (item) => item.id === planId
+  );
+
+  if (!plan) {
+    return;
+  }
+
+  const usedTaskIds = [];
+
+  const days = plan.days.map(
+    (day, index) => {
+      let taskId = day.taskId;
+      const preferred = taskById(taskId);
+
+      /*
+       * Если исходного задания нет, оно выполнено
+       * или уже встречалось в этом плане —
+       * подбираем подходящую замену.
+       */
+      if (
+        !preferred ||
+        isCompleted(taskId) ||
+        usedTaskIds.includes(taskId)
+      ) {
+        const replacement = chooseWeekReplacement(
+          day,
+          usedTaskIds
+        );
+
+        if (replacement) {
+          taskId = replacement.id;
+        }
+      }
+
+      usedTaskIds.push(taskId);
+
+      return {
+        id: `week-day-${index + 1}`,
+        title: day.title,
+        taskId,
+        fallbackCategory:
+          day.fallbackCategory || "",
+        colorHint: day.colorHint || "",
+        status:
+          index === 0
+            ? "active"
+            : "planned",
+        originalTaskId: day.taskId,
+        replacedAt: null
+      };
+    }
+  );
+
+  state.weekPlan = {
+    planId: plan.id,
+    startedAt: localDateKey(),
+    startedTimestamp: Date.now(),
+    days
+  };
+
+  saveState();
+  renderWeek();
+
+  showToast("План начат. Можно идти в своём темпе");
+}
+
+function chooseWeekReplacement(
+  day,
+  excludedIds = []
+) {
+  const excluded = new Set([
+    ...excludedIds,
+    ...state.completedTasks
+  ]);
+
+  let candidates = tasks.filter(
+    (task) =>
+      task.status === "ready" &&
+      !excluded.has(task.id) &&
+      taskMatchesSeason(task)
+  );
+
+  if (day.fallbackCategory) {
+    const categoryCandidates = candidates.filter(
+      (task) =>
+        task.category === day.fallbackCategory
+    );
+
+    if (categoryCandidates.length) {
+      candidates = categoryCandidates;
+    }
+  }
+
+  const profileCandidates = candidates.filter(
+    (task) => taskMatchesProfile(task)
+  );
+
+  if (profileCandidates.length) {
+    candidates = profileCandidates;
+  }
+
+  const unseenCandidates = candidates.filter(
+    (task) =>
+      !state.recentTaskIds.includes(task.id)
+  );
+
+  if (unseenCandidates.length) {
+    candidates = unseenCandidates;
+  }
+
+  return randomItem(candidates);
+}
+
+function replaceWeekDay(dayId) {
+  if (!state.weekPlan) {
+    return;
+  }
+
+  const index = getWeekDayIndex(dayId);
+
+  if (index === -1) {
+    return;
+  }
+
+  const day = state.weekPlan.days[index];
+
+  if (day.status === "completed") {
+    showToast(
+      "Выполненное задание лучше оставить в истории недели"
+    );
+    return;
+  }
+
+  const otherTaskIds = state.weekPlan.days
+    .filter((item) => item.id !== dayId)
+    .map((item) => item.taskId);
+
+  const replacement = chooseWeekReplacement(
+    day,
+    otherTaskIds
+  );
+
+  if (!replacement) {
+    showToast(
+      "Подходящей замены пока не найдено"
+    );
+    return;
+  }
+
+  day.taskId = replacement.id;
+  day.status =
+    index === getCurrentWeekIndex()
+      ? "active"
+      : "planned";
+  day.replacedAt = Date.now();
+
+  saveState();
+  renderWeek();
+
+  showToast("Задание недели заменено");
+}
+
+function getCurrentWeekIndex() {
+  if (!state.weekPlan) {
+    return -1;
+  }
+
+  const activeIndex = state.weekPlan.days.findIndex(
+    (day) => day.status === "active"
+  );
+
+  if (activeIndex !== -1) {
+    return activeIndex;
+  }
+
+  return state.weekPlan.days.findIndex(
+    (day) => day.status === "planned"
+  );
+}
+
+function skipWeekDay(dayId) {
+  if (!state.weekPlan) {
+    return;
+  }
+
+  const index = getWeekDayIndex(dayId);
+
+  if (index === -1) {
+    return;
+  }
+
+  const day = state.weekPlan.days[index];
+
+  if (day.status === "completed") {
+    showToast(
+      "Выполненное задание нельзя пропустить"
+    );
+    return;
+  }
+
+  day.status = "skipped";
+
+  activateNextWeekDay();
+
+  saveState();
+  renderWeek();
+
+  showToast("День пропущен без штрафа");
+}
+
+function completeWeekDayForTask(taskId) {
+  if (!state.weekPlan) {
+    return false;
+  }
+
+  const day = state.weekPlan.days.find(
+    (item) =>
+      item.taskId === taskId &&
+      ["active", "planned"].includes(item.status)
+  );
+
+  if (!day) {
+    return false;
+  }
+
+  day.status = "completed";
+
+  activateNextWeekDay();
+
+  saveState();
+
+  return true;
+}
+
+function activateNextWeekDay() {
+  if (!state.weekPlan) {
+    return;
+  }
+
+  const activeDays = state.weekPlan.days.filter(
+    (day) => day.status === "active"
+  );
+
+  activeDays.forEach((day) => {
+    day.status = "planned";
+  });
+
+  const next = state.weekPlan.days.find(
+    (day) => day.status === "planned"
+  );
+
+  if (next) {
+    next.status = "active";
+  }
+}
+
+function reopenWeekDay(dayId) {
+  if (!state.weekPlan) {
+    return;
+  }
+
+  const day = state.weekPlan.days.find(
+    (item) => item.id === dayId
+  );
+
+  if (!day) {
+    return;
+  }
+
+  const selectedTask = taskForWeekDay(day);
+
+  if (!selectedTask) {
+    showToast("Задание не найдено");
+    return;
+  }
+
+  openTask(selectedTask.id);
+}
+
+function finishWeekPlan() {
+  if (!state.weekPlan) {
+    return;
+  }
+
+  const completed = getWeekCompletedCount();
+
+  const confirmed = window.confirm(
+    `Завершить план? Выполнено: ${completed} из 7.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  state.weekPlan = null;
+  saveState();
+  renderWeek();
+
+  showToast("План завершён. Практика остаётся с вами");
+}
+
+function renderWeek() {
+  state.screen = "week";
+  saveState();
+  updateNavigation();
+
+  const activePlan = state.weekPlan;
+
+  if (!activePlan) {
+    renderWeekPlanLibrary();
+    scrollToTop("auto");
+    return;
+  }
+
+  const plan = weekPlans.find(
+    (item) => item.id === activePlan.planId
+  );
+
+  const completedCount = getWeekCompletedCount();
+  const skippedCount = activePlan.days.filter(
+    (day) => day.status === "skipped"
+  ).length;
+  const activeDay = getActiveWeekDay();
+
+  app.innerHTML = `
+    <section class="screen week-screen">
+      <button
+        class="back-button"
+        type="button"
+        data-action="back-from-week"
+      >
+        ← Назад
+      </button>
+
+      <div class="week-heading">
+        <span class="week-plan-icon">
+          ${escapeHtml(plan?.icon || "◌")}
+        </span>
+
+        <div>
+          <span class="date-label">
+            МОЯ НЕДЕЛЯ
+          </span>
+
+          <h2>
+            ${escapeHtml(
+              plan?.title || "План практики"
+            )}
+          </h2>
+
+          <p>
+            ${escapeHtml(
+              plan?.subtitle || ""
+            )}
+          </p>
+        </div>
+      </div>
+
+      <div class="week-progress-card">
+        <div class="week-progress-topline">
+          <strong>
+            ${completedCount} из 7 выполнено
+          </strong>
+
+          <span>
+            ${
+              skippedCount
+                ? `${skippedCount} без отметки`
+                : "без обязательной серии"
+            }
+          </span>
+        </div>
+
+        <div
+          class="week-progress-bar"
+          aria-label="Прогресс недели"
+        >
+          <span
+            style="width: ${
+              (completedCount / 7) * 100
+            }%"
+          ></span>
+        </div>
+      </div>
+
+      ${
+        activeDay
+          ? renderCurrentWeekCard(activeDay)
+          : `
+            <section class="week-finished-card">
+              <span class="week-finished-icon">✓</span>
+
+              <h3>План завершён</h3>
+
+              <p>
+                Вы прошли ${completedCount} из 7 заданий.
+                Этого достаточно, чтобы увидеть неделю
+                как небольшую личную серию.
+              </p>
+
+              <button
+                class="primary-button"
+                type="button"
+                data-action="finish-week-plan"
+              >
+                Завершить и выбрать новый
+              </button>
+            </section>
+          `
+      }
+
+      <div class="section-header">
+        <h3>Все дни</h3>
+
+        <span class="date-label">
+          7 дней
+        </span>
+      </div>
+
+      <div class="week-days-list">
+        ${activePlan.days
+          .map(
+            (day, index) =>
+              renderWeekDayRow(day, index)
+          )
+          .join("")}
+      </div>
+
+      <button
+        class="week-finish-button"
+        type="button"
+        data-action="finish-week-plan"
+      >
+        Завершить этот план
+      </button>
+    </section>
+  `;
+
+  scrollToTop("auto");
+}
+
+function renderWeekPlanLibrary() {
+  app.innerHTML = `
+    <section class="screen week-screen">
+      <button
+        class="back-button"
+        type="button"
+        data-action="back-from-week"
+      >
+        ← Назад
+      </button>
+
+      <div class="screen-heading">
+        <span class="date-label">
+          МОЯ НЕДЕЛЯ
+        </span>
+
+        <h2>Выберите свой темп</h2>
+
+        <p>
+          План — это не обязательная серия.
+          Можно пропустить день, заменить задание
+          или завершить неделю частично.
+        </p>
+      </div>
+
+      <div class="week-plan-list">
+        ${weekPlans
+          .map(
+            (plan) => `
+              <article class="week-plan-card">
+                <div class="week-plan-card-top">
+                  <span class="week-plan-icon">
+                    ${escapeHtml(plan.icon)}
+                  </span>
+
+                  <span class="tag">
+                    ${escapeHtml(plan.level)}
+                  </span>
+                </div>
+
+                <h3>
+                  ${escapeHtml(plan.title)}
+                </h3>
+
+                <p>
+                  ${escapeHtml(plan.subtitle)}
+                </p>
+
+                <small>
+                  ${escapeHtml(plan.description)}
+                </small>
+
+                <button
+                  class="primary-button"
+                  type="button"
+                  data-start-week-plan="${escapeHtml(
+                    plan.id
+                  )}"
+                >
+                  Начать план
+                </button>
+              </article>
+            `
+          )
+          .join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderCurrentWeekCard(day) {
+  const task = taskForWeekDay(day);
+
+  if (!task) {
+    return `
+      <div class="empty-state">
+        Это задание недоступно.<br />
+        Замените его в списке недели.
+      </div>
+    `;
+  }
+
+  const index = getWeekDayIndex(day.id);
+
+  return `
+    <section class="week-current-card">
+      <div class="week-current-topline">
+        <span>
+          День ${index + 1} из 7
+        </span>
+
+        ${
+          day.colorHint
+            ? `
+              <span class="week-color-hint">
+                Ищите: ${escapeHtml(
+                  day.colorHint
+                )}
+              </span>
+            `
+            : ""
+        }
+      </div>
+
+      <h3>${escapeHtml(day.title)}</h3>
+
+      <h2>${escapeHtml(task.title)}</h2>
+
+      <p>
+        ${escapeHtml(task.shortDescription)}
+      </p>
+
+      <div class="week-current-meta">
+        <span>${escapeHtml(task.category)}</span>
+        <span>${escapeHtml(task.place)}</span>
+      </div>
+
+      <div class="week-current-actions">
+        <button
+          class="primary-button"
+          type="button"
+          data-week-open="${escapeHtml(day.id)}"
+        >
+          Открыть задание
+        </button>
+
+        <button
+          class="secondary-button"
+          type="button"
+          data-week-replace="${escapeHtml(day.id)}"
+        >
+          Заменить
+        </button>
+
+        <button
+          class="ghost-button"
+          type="button"
+          data-week-skip="${escapeHtml(day.id)}"
+        >
+          Пропустить
+        </button>
+      </div>
+    </section>
+  `;
+}
+
+function renderWeekDayRow(day, index) {
+  const task = taskForWeekDay(day);
+
+  const statusLabels = {
+    active: "Сейчас",
+    planned: "Запланировано",
+    completed: "Выполнено",
+    skipped: "Без отметки"
+  };
+
+  return `
+    <article
+      class="week-day-row week-day-${escapeHtml(
+        day.status
+      )}"
+    >
+      <div class="week-day-number">
+        ${index + 1}
+      </div>
+
+      <div class="week-day-copy">
+        <span class="week-day-status">
+          ${escapeHtml(
+            statusLabels[day.status] ||
+              "Запланировано"
+          )}
+        </span>
+
+        <strong>
+          ${escapeHtml(day.title)}
+        </strong>
+
+        <small>
+          ${
+            task
+              ? escapeHtml(task.title)
+              : "Задание недоступно"
+          }
+        </small>
+      </div>
+
+      <div class="week-day-actions">
+        ${
+          day.status !== "skipped"
+            ? `
+              <button
+                class="week-day-open"
+                type="button"
+                data-week-open="${escapeHtml(
+                  day.id
+                )}"
+                aria-label="Открыть задание"
+              >
+                →
+              </button>
+            `
+            : ""
+        }
+
+        ${
+          ["active", "planned"].includes(
+            day.status
+          )
+            ? `
+              <button
+                class="week-day-more"
+                type="button"
+                data-week-menu="${escapeHtml(
+                  day.id
+                )}"
+                aria-label="Действия с заданием"
+              >
+                ⋯
+              </button>
+            `
+            : ""
+        }
+      </div>
+    </article>
+  `;
+}
 /*
  * ============================================================================
  * Коллекция
@@ -3324,7 +4147,43 @@ function renderProfile() {
           </p>
         </div>
       </div>
+      <div class="section-header">
+        <h3>Моя неделя</h3>
+      </div>
 
+      <div class="profile-card week-profile-card">
+        <div class="profile-row">
+          <div class="profile-copy">
+            <strong>
+              ${
+                state.weekPlan
+                  ? "Активный план"
+                  : "Готовые планы"
+              }
+            </strong>
+
+            <small>
+              ${
+                state.weekPlan
+                  ? `${getWeekCompletedCount()} из 7 дней выполнено`
+                  : "Свет, композиция, фактуры, ракурсы и вдохновение"
+              }
+            </small>
+          </div>
+
+          <button
+            class="setting-button"
+            type="button"
+            data-action="open-week"
+          >
+            ${
+              state.weekPlan
+                ? "Открыть"
+                : "Выбрать"
+            }
+          </button>
+        </div>
+      </div>
       <div class="section-header">
         <h3>Данные приложения</h3>
       </div>
@@ -3766,7 +4625,98 @@ document.addEventListener(
 
       return;
     }
+    const weekPlanButton = event.target.closest(
+      "[data-start-week-plan]"
+    );
 
+    if (weekPlanButton) {
+      startWeekPlan(
+        weekPlanButton.dataset.startWeekPlan
+      );
+      return;
+    }
+
+    const weekOpenButton = event.target.closest(
+      "[data-week-open]"
+    );
+
+    if (weekOpenButton) {
+      reopenWeekDay(
+        weekOpenButton.dataset.weekOpen
+      );
+      return;
+    }
+
+    const weekReplaceButton = event.target.closest(
+      "[data-week-replace]"
+    );
+
+    if (weekReplaceButton) {
+      replaceWeekDay(
+        weekReplaceButton.dataset.weekReplace
+      );
+      return;
+    }
+
+    const weekSkipButton = event.target.closest(
+      "[data-week-skip]"
+    );
+
+    if (weekSkipButton) {
+      skipWeekDay(
+        weekSkipButton.dataset.weekSkip
+      );
+      return;
+    }
+
+    const weekMenuButton = event.target.closest(
+      "[data-week-menu]"
+    );
+
+    if (weekMenuButton) {
+      const dayId =
+        weekMenuButton.dataset.weekMenu;
+
+      openChoiceSheet({
+        title: "Действия с заданием",
+        currentValue: "",
+        options: [
+          {
+            value: "open",
+            label: "Открыть задание",
+            description:
+              "Посмотреть полную инструкцию"
+          },
+          {
+            value: "replace",
+            label: "Заменить",
+            description:
+              "Подобрать другую практику"
+          },
+          {
+            value: "skip",
+            label: "Пропустить",
+            description:
+              "Оставить день без отметки"
+          }
+        ],
+        onSelect(value) {
+          if (value === "open") {
+            reopenWeekDay(dayId);
+          }
+
+          if (value === "replace") {
+            replaceWeekDay(dayId);
+          }
+
+          if (value === "skip") {
+            skipWeekDay(dayId);
+          }
+        }
+      });
+
+      return;
+    }
     const actionButton =
       event.target.closest(
         "[data-action]"
@@ -3790,7 +4740,20 @@ document.addEventListener(
     if (action === "refresh-daily-all") {
       replaceAllDailyTasks();
     }
+    if (action === "open-week") {
+      renderWeek();
+    }
 
+    if (action === "back-from-week") {
+      state.screen = "today";
+      saveState();
+      render();
+      scrollToTop();
+    }
+
+    if (action === "finish-week-plan") {
+      finishWeekPlan();
+    }
     if (action === "open-all-tasks") {
       setScreen("shoot");
     }

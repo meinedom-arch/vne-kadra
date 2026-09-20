@@ -2627,3 +2627,459 @@ input:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Моя неделя                                                                 */
+/* -------------------------------------------------------------------------- */
+
+.week-preview {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 26px;
+  padding: 18px;
+  background:
+    linear-gradient(
+      135deg,
+      var(--accent-soft),
+      transparent 70%
+    ),
+    var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.week-preview-active {
+  border-color: rgba(233, 101, 22, 0.3);
+}
+
+.week-preview-copy {
+  min-width: 0;
+}
+
+.week-preview-kicker {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--accent-light);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.week-preview h3 {
+  margin: 0 0 7px;
+  font-size: 19px;
+}
+
+.week-preview p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.week-preview .secondary-button {
+  flex: 0 0 auto;
+}
+
+.week-screen {
+  padding-bottom: 8px;
+}
+
+.week-heading {
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+  margin-bottom: 19px;
+}
+
+.week-heading h2 {
+  margin: 4px 0 8px;
+  font-size: 30px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.week-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--small-size);
+  line-height: 1.55;
+}
+
+.week-plan-icon {
+  display: grid;
+  flex: 0 0 51px;
+  width: 51px;
+  height: 51px;
+  place-items: center;
+  color: var(--accent-light);
+  background: var(--accent-soft);
+  border-radius: 17px;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.week-progress-card {
+  padding: 17px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 17px;
+}
+
+.week-progress-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.week-progress-topline strong {
+  font-size: 16px;
+}
+
+.week-progress-topline span {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+}
+
+.week-progress-bar {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  background: var(--surface-3);
+  border-radius: 999px;
+}
+
+.week-progress-bar span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--accent),
+    var(--accent-light)
+  );
+  border-radius: inherit;
+  transition: width 240ms ease;
+}
+
+.week-current-card {
+  margin-top: 13px;
+  padding: 20px;
+  background:
+    radial-gradient(
+      circle at 92% 6%,
+      var(--accent-soft),
+      transparent 32%
+    ),
+    var(--surface);
+  border: 1px solid rgba(233, 101, 22, 0.27);
+  border-radius: var(--radius-md);
+}
+
+.week-current-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 13px;
+  color: var(--accent-light);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.week-color-hint {
+  padding: 6px 9px;
+  color: var(--text);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.week-current-card h3 {
+  margin: 0 0 6px;
+  color: var(--accent-light);
+  font-size: 14px;
+}
+
+.week-current-card h2 {
+  margin: 0 0 10px;
+  font-size: 27px;
+  line-height: 1.13;
+  letter-spacing: -0.01em;
+}
+
+.week-current-card > p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.58;
+}
+
+.week-current-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.week-current-meta span {
+  padding: 7px 9px;
+  color: var(--muted);
+  background: var(--surface-2);
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.week-current-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 19px;
+}
+
+.week-current-actions .ghost-button {
+  padding: 0 8px;
+}
+
+.week-days-list,
+.week-plan-list {
+  display: grid;
+  gap: 10px;
+}
+
+.week-day-row {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 74px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+
+.week-day-active {
+  border-color: rgba(233, 101, 22, 0.5);
+  background:
+    linear-gradient(
+      135deg,
+      var(--accent-softer),
+      transparent
+    ),
+    var(--surface);
+}
+
+.week-day-completed {
+  opacity: 0.72;
+}
+
+.week-day-skipped {
+  opacity: 0.58;
+}
+
+.week-day-number {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  place-items: center;
+  color: var(--muted);
+  background: var(--surface-2);
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.week-day-active .week-day-number {
+  color: #fff;
+  background: var(--accent);
+}
+
+.week-day-completed .week-day-number {
+  color: #fff;
+  background: var(--success);
+}
+
+.week-day-copy {
+  min-width: 0;
+}
+
+.week-day-copy strong,
+.week-day-copy small,
+.week-day-status {
+  display: block;
+}
+
+.week-day-copy strong {
+  margin: 3px 0;
+  font-size: 15px;
+  line-height: 1.28;
+}
+
+.week-day-copy small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.week-day-status {
+  color: var(--accent-light);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.week-day-completed .week-day-status {
+  color: var(--success);
+}
+
+.week-day-skipped .week-day-status {
+  color: var(--muted-2);
+}
+
+.week-day-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.week-day-open,
+.week-day-more {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  place-items: center;
+  color: var(--accent-light);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 18px;
+}
+
+.week-day-more {
+  color: var(--muted);
+}
+
+.week-plan-card {
+  padding: 20px;
+  background:
+    linear-gradient(
+      145deg,
+      var(--surface),
+      var(--surface-2)
+    );
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.week-plan-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.week-plan-card .week-plan-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+}
+
+.week-plan-card h3 {
+  margin: 0 0 8px;
+  font-size: 21px;
+  line-height: 1.2;
+}
+
+.week-plan-card p {
+  margin: 0 0 9px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.week-plan-card small {
+  display: block;
+  margin-bottom: 18px;
+  color: var(--muted-2);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.week-finished-card {
+  margin-top: 13px;
+  padding: 27px 20px;
+  text-align: center;
+  background:
+    linear-gradient(
+      135deg,
+      var(--success-soft),
+      transparent
+    ),
+    var(--surface);
+  border: 1px solid rgba(142, 189, 135, 0.32);
+  border-radius: var(--radius-md);
+}
+
+.week-finished-icon {
+  display: grid;
+  width: 49px;
+  height: 49px;
+  margin: 0 auto 13px;
+  place-items: center;
+  color: #fff;
+  background: var(--success);
+  border-radius: 50%;
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.week-finished-card h3 {
+  margin: 0 0 8px;
+  font-size: 22px;
+}
+
+.week-finished-card p {
+  margin: 0 0 19px;
+  color: var(--muted);
+  line-height: 1.58;
+}
+
+.week-finish-button {
+  width: 100%;
+  margin: 17px 0 8px;
+  padding: 14px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px dashed var(--line-strong);
+  border-radius: 14px;
+  font-size: 13px;
+}
+
+@media (max-width: 430px) {
+  .week-preview {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .week-preview .secondary-button {
+    width: 100%;
+  }
+
+  .week-current-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .week-current-actions .ghost-button {
+    grid-column: 1 / -1;
+    min-height: 42px;
+  }
+}

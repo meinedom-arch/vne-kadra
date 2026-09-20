@@ -1,4 +1,4 @@
-const CACHE_NAME = "vne-kadra-v7";
+const CACHE_NAME = "vne-kadra-v8";
 
 const CORE_FILES = [
   "./",
@@ -15,10 +15,11 @@ const OPTIONAL_FILES = [
 ];
 
 /*
- * Установка:
- * основные файлы обязательны;
- * отсутствие необязательной иконки
- * не должно ломать установку Service Worker.
+ * Установка новой версии.
+ *
+ * Основные файлы нужны для работы приложения офлайн.
+ * Иконки добавляются отдельно: если одной из них нет,
+ * установка Service Worker всё равно не должна сломаться.
  */
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -35,17 +36,20 @@ self.addEventListener("install", (event) => {
 });
 
 /*
- * Активация:
- * удаляем кэши предыдущих версий.
+ * При активации удаляем кэши старых версий:
+ *
+ * vne-kadra-v7
+ * vne-kadra-v6
+ * и более ранние.
  */
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
-      const oldCaches = cacheNames
+      const outdatedCaches = cacheNames
         .filter((name) => name !== CACHE_NAME)
         .map((name) => caches.delete(name));
 
-      return Promise.all(oldCaches);
+      return Promise.all(outdatedCaches);
     })
   );
 
@@ -53,11 +57,9 @@ self.addEventListener("activate", (event) => {
 });
 
 /*
- * Запросы навигации:
- * сначала проверяем сеть, чтобы пользователь быстрее
- * получал новую версию index.html.
- *
- * При отсутствии сети открываем закэшированную версию.
+ * Для переходов между страницами:
+ * сначала пытаемся получить свежую index.html из сети,
+ * затем используем офлайн-копию.
  */
 self.addEventListener("fetch", (event) => {
   const request = event.request;
@@ -69,7 +71,7 @@ self.addEventListener("fetch", (event) => {
   const requestUrl = new URL(request.url);
 
   /*
-   * Не перехватываем запросы к чужим доменам.
+   * Не кэшируем сторонние ресурсы.
    */
   if (requestUrl.origin !== self.location.origin) {
     return;
@@ -80,7 +82,9 @@ self.addEventListener("fetch", (event) => {
       fetch(request)
         .then(async (response) => {
           if (response && response.ok) {
-            const cache = await caches.open(CACHE_NAME);
+            const cache = await caches.open(
+              CACHE_NAME
+            );
 
             await cache.put(
               "./index.html",
@@ -91,18 +95,20 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(async () => {
-          const exactMatch = await caches.match(request);
+          const exactMatch = await caches.match(
+            request
+          );
 
           if (exactMatch) {
             return exactMatch;
           }
 
-          const indexMatch = await caches.match(
+          const cachedIndex = await caches.match(
             "./index.html"
           );
 
-          if (indexMatch) {
-            return indexMatch;
+          if (cachedIndex) {
+            return cachedIndex;
           }
 
           return new Response(
@@ -122,11 +128,14 @@ self.addEventListener("fetch", (event) => {
   }
 
   /*
-   * Для файлов приложения используем стратегию
-   * «сначала сеть, затем кэш».
+   * Для JavaScript, CSS, базы данных и манифеста:
+ *
+   * 1. Сначала пробуем сеть.
+   * 2. Если сеть доступна — сохраняем свежую версию.
+   * 3. Если сети нет — открываем последнюю сохранённую копию.
    *
-   * Во время разработки это помогает быстрее получать
-   * обновлённые app.js, data.js и styles.css.
+   * Это особенно важно для data.js и app.js,
+   * потому что они часто обновляются во время разработки.
    */
   event.respondWith(
     fetch(request)
@@ -136,7 +145,9 @@ self.addEventListener("fetch", (event) => {
           response.ok &&
           response.type !== "opaque"
         ) {
-          const cache = await caches.open(CACHE_NAME);
+          const cache = await caches.open(
+            CACHE_NAME
+          );
 
           await cache.put(
             request,
